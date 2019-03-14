@@ -172,8 +172,12 @@ namespace Grid {
 
 };
 
-#include <Grid/simd/Grid_vector_types.h>
-#include <Grid/simd/Grid_vector_unops.h>
+#ifndef NEW_SIMD
+    #include <Grid/simd/Grid_vector_types.h>
+#else
+    #include <Grid/simd/Grid_vector_types_new.h>
+    #pragma message("use new Grid_vector_implementation")
+#endif
 
 namespace Grid {
   // Default precision
