@@ -375,6 +375,30 @@ namespace Optimization {
     static inline void Exchange3(vec<T> &out1, vec<T> &out2, const vec<T> &in1, const vec<T> &in2){
       ExchangeN<T,3>(out1,out2,in1,in2);
     };
+    template <typename T>
+    static inline void Exchange4(vec<T> &out1, vec<T> &out2, const vec<T> &in1, const vec<T> &in2){
+      ExchangeN<T,4>(out1,out2,in1,in2);
+    };
+    template <typename T>
+    static inline void Exchange5(vec<T> &out1, vec<T> &out2, const vec<T> &in1, const vec<T> &in2){
+      ExchangeN<T,5>(out1,out2,in1,in2);
+    };
+    template <typename T>
+    static inline void Exchange6(vec<T> &out1, vec<T> &out2, const vec<T> &in1, const vec<T> &in2){
+      ExchangeN<T,6>(out1,out2,in1,in2);
+    };
+    template <typename T>
+    static inline void Exchange7(vec<T> &out1, vec<T> &out2, const vec<T> &in1, const vec<T> &in2){
+      ExchangeN<T,7>(out1,out2,in1,in2);
+    };
+    template <typename T>
+    static inline void Exchange8(vec<T> &out1, vec<T> &out2, const vec<T> &in1, const vec<T> &in2){
+      ExchangeN<T,8>(out1,out2,in1,in2);
+    };
+    template <typename T>
+    static inline void Exchange9(vec<T> &out1, vec<T> &out2, const vec<T> &in1, const vec<T> &in2){
+      ExchangeN<T,9>(out1,out2,in1,in2);
+    };
   };
 
 
@@ -400,6 +424,12 @@ namespace Optimization {
     DECL_PERMUTE_N(1);
     DECL_PERMUTE_N(2);
     DECL_PERMUTE_N(3);
+    DECL_PERMUTE_N(4);
+    DECL_PERMUTE_N(5);
+    DECL_PERMUTE_N(6);
+    DECL_PERMUTE_N(7);
+    DECL_PERMUTE_N(8);
+    DECL_PERMUTE_N(9);
   };
 
   #undef perm

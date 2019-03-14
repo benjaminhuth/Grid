@@ -154,6 +154,8 @@ void Tester(const functor &func)
 
   for(int i=0;i<Nsimd;i++) {
     func(reference[i],input1[i],input2[i]);
+    // Strange effect: without this statement, the reference calculation fails at SX-Aurora for timesI with vComplexF
+    if(std::abs(reference[i]) == 0) std::cout << "reference calculation failed" << std::endl;
   }
 
   extract<vec,scal>(v_result,result);

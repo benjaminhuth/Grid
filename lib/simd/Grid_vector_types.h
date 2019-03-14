@@ -366,13 +366,25 @@ class Grid_simd {
     ret.v = cx.v;
     return ret;
   }
-  ///////////////////////
+    ///////////////////////
   // Exchange
   // Al Ah , Bl Bh -> Al Bl Ah,Bh
   ///////////////////////
   friend inline void exchange(Grid_simd &out1,Grid_simd &out2,const Grid_simd &in1,const Grid_simd &in2, const int &n)
   {
-    if       (n==3) {
+    if       (n==9) {
+      Optimization::Exchange::Exchange9(out1.v,out2.v,in1.v,in2.v);
+    } else if(n==8) {
+      Optimization::Exchange::Exchange8(out1.v,out2.v,in1.v,in2.v);
+    } else if(n==7) {
+      Optimization::Exchange::Exchange7(out1.v,out2.v,in1.v,in2.v);
+    } else if(n==6) {
+      Optimization::Exchange::Exchange6(out1.v,out2.v,in1.v,in2.v);
+    } else if(n==5) {
+      Optimization::Exchange::Exchange5(out1.v,out2.v,in1.v,in2.v);
+    } else if(n==4) {
+      Optimization::Exchange::Exchange4(out1.v,out2.v,in1.v,in2.v);
+    } else if(n==3) {
       Optimization::Exchange::Exchange3(out1.v,out2.v,in1.v,in2.v);
     } else if(n==2) {
       Optimization::Exchange::Exchange2(out1.v,out2.v,in1.v,in2.v);
@@ -411,12 +423,36 @@ class Grid_simd {
   friend inline void permute3(Grid_simd &y, const Grid_simd &b) {
     y.v = Optimization::Permute::Permute3(b.v);
   }
+  friend inline void permute4(Grid_simd &y, const Grid_simd &b) {
+    y.v = Optimization::Permute::Permute4(b.v);
+  }
+  friend inline void permute5(Grid_simd &y, const Grid_simd &b) {
+    y.v = Optimization::Permute::Permute5(b.v);
+  }
+  friend inline void permute6(Grid_simd &y, const Grid_simd &b) {
+    y.v = Optimization::Permute::Permute6(b.v);
+  }
+  friend inline void permute7(Grid_simd &y, const Grid_simd &b) {
+    y.v = Optimization::Permute::Permute7(b.v);
+  }
+  friend inline void permute8(Grid_simd &y, const Grid_simd &b) {
+    y.v = Optimization::Permute::Permute8(b.v);
+  }
+  friend inline void permute9(Grid_simd &y, const Grid_simd &b) {
+    y.v = Optimization::Permute::Permute9(b.v);
+  }
   friend inline void permute(Grid_simd &y, const Grid_simd &b, const int perm) {
     if (perm & RotateBit) {
       int dist = perm & 0xF;
       y = rotate(b, dist);
       return;
     }
+    else if(perm==9) permute9(y, b);
+    else if(perm==8) permute8(y, b);
+    else if(perm==7) permute7(y, b);
+    else if(perm==6) permute6(y, b);
+    else if(perm==5) permute5(y, b);
+    else if(perm==4) permute4(y, b);
     else if(perm==3) permute3(y, b);
     else if(perm==2) permute2(y, b);
     else if(perm==1) permute1(y, b);

@@ -87,19 +87,27 @@ int GridThread::_cores=1;
 
 const std::vector<int> &GridDefaultLatt(void)     {return Grid_default_latt;};
 const std::vector<int> &GridDefaultMpi(void)      {return Grid_default_mpi;};
+
+// New implementation for Aurora SX to set layout for larger vectors
 const std::vector<int> GridDefaultSimd(int dims,int nsimd)
 {
-    std::vector<int> layout(dims);
-    int nn=nsimd;
-    for(int d=dims-1;d>=0;d--){
-      if ( nn>=2) {
-	layout[d]=2;
-	nn/=2;
-      } else {
-	layout[d]=1;
-      }
+    std::vector<int> layout(dims,1);
+    
+    auto vol = [&](std::vector<int> vec){ int vol{1}; for( auto &a : vec ) vol *= a; return vol; };
+    int d = 0;
+    
+    while( vol(layout) < nsimd )
+    {
+        layout[d] *= 2;
+        
+        if( d == dims-1 )
+            d = 0;
+        else
+            ++d;
     }
-    assert(nn==1);
+    
+    assert(vol(layout) == nsimd);
+        
     return layout;
 }
 
@@ -464,7 +472,8 @@ void Grid_debug_handler_init(void)
   sigaction(SIGTRAP,&sa,NULL);
   sigaction(SIGBUS,&sa,NULL);
 
-  feenableexcept( FE_INVALID|FE_OVERFLOW|FE_DIVBYZERO);
+// Not avaible at SX-Aurora, maybe fix later like for Apple
+//   feenableexcept( FE_INVALID|FE_OVERFLOW|FE_DIVBYZERO);
 
   sigaction(SIGFPE,&sa,NULL);
   sigaction(SIGKILL,&sa,NULL);

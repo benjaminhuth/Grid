@@ -26,6 +26,7 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
     *************************************************************************************/
     /*  END LEGAL */
 #include <Grid/GridCore.h>
+#include <strings.h>
 
 namespace Grid {
 

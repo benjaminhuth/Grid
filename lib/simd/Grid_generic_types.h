@@ -74,7 +74,8 @@ namespace Optimization {
   // SIMD vector types
   template <typename T>
   struct vec {
-    alignas(GEN_SIMD_WIDTH) T v[W<T>::r];
+    // SX-Aurora doesn't allow alignment for > 8 byte
+    T v[W<T>::r];
   };
 
   typedef vec<float>     vecf;
