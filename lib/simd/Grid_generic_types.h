@@ -75,7 +75,11 @@ namespace Optimization {
   template <typename T>
   struct vec {
     // SX-Aurora doesn't allow alignment for > 8 byte
+#ifdef __ve__
     T v[W<T>::r];
+#else
+    alignas(GEN_SIMD_WIDTH) T v[W<T>::r];
+#endif
   };
 
   typedef vec<float>     vecf;

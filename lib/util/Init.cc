@@ -473,7 +473,9 @@ void Grid_debug_handler_init(void)
   sigaction(SIGBUS,&sa,NULL);
 
 // Not avaible at SX-Aurora, maybe fix later like for Apple
-//   feenableexcept( FE_INVALID|FE_OVERFLOW|FE_DIVBYZERO);
+#ifndef __ve__
+  feenableexcept( FE_INVALID|FE_OVERFLOW|FE_DIVBYZERO);
+#endif
 
   sigaction(SIGFPE,&sa,NULL);
   sigaction(SIGKILL,&sa,NULL);
