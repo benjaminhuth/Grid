@@ -3,7 +3,7 @@
 
 #include "Grid_vector_types_base.h"
 
-#ifdef __clang__
+#if defined(__clang__) && defined(__ve__) 
     #include "Grid_vector_types_arith_clang.h"
 #else
     #include "Grid_vector_types_arith_gen.h"

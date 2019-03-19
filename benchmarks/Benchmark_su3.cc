@@ -36,9 +36,6 @@ int main (int argc, char ** argv)
 {
   Grid_init(&argc,&argv);
   
-#define LMAX (16)
-#define LMIN (4)
-  
   int64_t Nloop=20;
   
   std::vector<int> simd_layout = GridDefaultSimd(Nd,vComplex::Nsimd());  
@@ -52,8 +49,11 @@ int main (int argc, char ** argv)
   std::cout<<GridLogMessage << "===================================================================================================="<<std::endl;
   std::cout<<GridLogMessage << "  L  "<<"\t\t"<<"bytes"<<"\t\t\t"<<"GB/s\t\t GFlop/s"<<std::endl;
   std::cout<<GridLogMessage << "----------------------------------------------------------"<<std::endl;
+  
+  int lmin = *std::max_element(simd_layout.begin(), simd_layout.end());
+  int lmax = 16;
 
-  for(int lat=LMIN;lat<=LMAX;lat+=LMIN){
+  for(int lat=lmin;lat<=lmax;lat+=lmin){
 
       std::vector<int> latt_size  ({lat*mpi_layout[0],lat*mpi_layout[1],lat*mpi_layout[2],lat*mpi_layout[3]});
       int64_t vol = latt_size[0]*latt_size[1]*latt_size[2]*latt_size[3];
@@ -85,7 +85,7 @@ int main (int argc, char ** argv)
   std::cout<<GridLogMessage << "  L  "<<"\t\t"<<"bytes"<<"\t\t\t"<<"GB/s\t\t GFlop/s"<<std::endl;
   std::cout<<GridLogMessage << "----------------------------------------------------------"<<std::endl;
 
-  for(int lat=LMIN;lat<=LMAX;lat+=LMIN){
+  for(int lat=lmin;lat<=lmax;lat+=lmin){
 
       std::vector<int> latt_size  ({lat*mpi_layout[0],lat*mpi_layout[1],lat*mpi_layout[2],lat*mpi_layout[3]});
       int64_t vol = latt_size[0]*latt_size[1]*latt_size[2]*latt_size[3];
@@ -116,7 +116,7 @@ int main (int argc, char ** argv)
   std::cout<<GridLogMessage << "  L  "<<"\t\t"<<"bytes"<<"\t\t\t"<<"GB/s\t\t GFlop/s"<<std::endl;
   std::cout<<GridLogMessage << "----------------------------------------------------------"<<std::endl;
 
-  for(int lat=LMIN;lat<=LMAX;lat+=LMIN){
+  for(int lat=lmin;lat<=lmax;lat+=lmin){
 
       std::vector<int> latt_size  ({lat*mpi_layout[0],lat*mpi_layout[1],lat*mpi_layout[2],lat*mpi_layout[3]});
       int64_t vol = latt_size[0]*latt_size[1]*latt_size[2]*latt_size[3];
@@ -147,7 +147,7 @@ int main (int argc, char ** argv)
   std::cout<<GridLogMessage << "  L  "<<"\t\t"<<"bytes"<<"\t\t\t"<<"GB/s\t\t GFlop/s"<<std::endl;
   std::cout<<GridLogMessage << "----------------------------------------------------------"<<std::endl;
 
-  for(int lat=LMIN;lat<=LMAX;lat+=LMIN){
+  for(int lat=lmin;lat<=lmax;lat+=lmin){
 
       std::vector<int> latt_size  ({lat*mpi_layout[0],lat*mpi_layout[1],lat*mpi_layout[2],lat*mpi_layout[3]});
       int64_t vol = latt_size[0]*latt_size[1]*latt_size[2]*latt_size[3];
