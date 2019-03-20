@@ -106,7 +106,7 @@ namespace Grid
                      const Grid_simd<std::complex<float_t>, Opt::vec<float_t>> *__restrict__ lhs, 
                      const Grid_simd<std::complex<float_t>, Opt::vec<float_t>> *__restrict__ rhs)
     {
-        VECTOR_FOR(i, Opt::W<float_t>::r, 1)
+        VECTOR_FOR(i, Opt::W<float_t>::c, 2)
         {
             ret->v.v[i]   = ret->v.v[i]   + lhs->v.v[i] * rhs->v.v[i]   - lhs->v.v[i+1] * rhs->v.v[i+1];
             ret->v.v[i+1] = ret->v.v[i+1] + lhs->v.v[i] * rhs->v.v[i+1] + lhs->v.v[i+1] * rhs->v.v[i];
