@@ -258,7 +258,8 @@ template<class vobj> void Copy_plane_permute(Lattice<vobj>& lhs,const Lattice<vo
  
   int rd = rhs._grid->_rdimensions[dimension];
 
-  if ( !rhs._grid->CheckerBoarded(dimension) ) {
+  if ( !rhs._grid->CheckerBoarded(dimension) ) 
+  {
     cbmask=0x3;
   }
 
@@ -268,17 +269,30 @@ template<class vobj> void Copy_plane_permute(Lattice<vobj>& lhs,const Lattice<vo
   int e1=rhs._grid->_slice_nblock[dimension];
   int e2=rhs._grid->_slice_block [dimension];
   int stride = rhs._grid->_slice_stride[dimension];
+  
+  // Calc split and rot for split_rotate:
+  int rot = 1;
+  int split = rhs._grid->_isites / rhs._grid->_simd_layout[0];
+  
+  for(int d=1; d<=dimension; ++d)
+  {
+    rot *= rhs._grid->_simd_layout[d-1];
+    split /= rhs._grid->_simd_layout[d];
+  }
 
-  parallel_for_nest2(int n=0;n<e1;n++){
-  for(int b=0;b<e2;b++){
-
+  parallel_for_nest2(int n=0;n<e1;n++)
+  {
+    for(int b=0;b<e2;b++)
+    {
       int o  =n*stride;
       int ocb=1<<lhs._grid->CheckerBoardFromOindex(o+b);
-      if ( ocb&cbmask ) {
-	permute(lhs._odata[lo+o+b],rhs._odata[ro+o+b],permute_type);
+        
+      if ( ocb&cbmask )
+      {
+	    splitRotate(lhs._odata[lo+o+b],rhs._odata[ro+o+b], permute_type * rot, split);
       }
-
-  }}
+    }
+  }
 }
 
 //////////////////////////////////////////////////////
@@ -314,61 +328,38 @@ template<class vobj> Lattice<vobj> Cshift_local(Lattice<vobj> &ret,const Lattice
   // the permute type
   ret.checkerboard = grid->CheckerBoardDestination(rhs.checkerboard,shift,dimension);
   int permute_dim =grid->PermuteDim(dimension);
-  int permute_type=grid->PermuteType(dimension);
-  int permute_type_dist;
 
-  for(int x=0;x<rd;x++){       
-
+  for(int lplane=0; lplane<rd; lplane++)
+  {
     int o   = 0;
-    int bo  = x * grid->_ostride[dimension];
+    int bo  = lplane * grid->_ostride[dimension];
     int cb= (cbmask==0x2)? Odd : Even;
 
     int sshift = grid->CheckerBoardShiftForCB(rhs.checkerboard,dimension,shift,cb);
-    int sx     = (x+sshift)%rd;
-
-    // FIXME : This must change where we have a 
-    // Rotate slice.
+    int rplane     = (lplane+sshift)%rd;
     
-    // Document how this works ; why didn't I do this when I first wrote it...
-    // wrap is whether sshift > rd.
-    //  num is sshift mod rd.
-    // 
-    //  shift 7
-    //
-    //  XoXo YcYc 
-    //  oXoX cYcY
-    //  XoXo YcYc
-    //  oXoX cYcY
-    //
-    //  sshift -- 
-    //
-    //  XX YY ; 3
-    //  XX YY ; 0
-    //  XX YY ; 3
-    //  XX YY ; 0
-    //
     int permute_slice=0;
-    if(permute_dim){
-      int wrap = sshift/rd; wrap=wrap % ly;
-      int  num = sshift%rd;
-
-      if ( x< rd-num ) permute_slice=wrap;
-      else permute_slice = (wrap+1)%ly;
-
-      if ( (ly>2) && (permute_slice) ) {
-	assert(permute_type & RotateBit);
-	permute_type_dist = permute_type|permute_slice;
-      } else {
-	permute_type_dist = permute_type;
-      }
+        
+    if( permute_dim != 0 )
+    {
+        int rotate_distance = sshift/rd; rotate_distance = rotate_distance % ly;
+        int copy_distance = sshift%rd;
+        
+        if ( lplane < rd - copy_distance ) 
+        {
+            permute_slice = rotate_distance;
+        }
+        else
+        {
+            permute_slice = (rotate_distance+1)%ly;
+        }
     }
 
-    if ( permute_slice ) Copy_plane_permute(ret,rhs,dimension,x,sx,cbmask,permute_type_dist);
-    else                 Copy_plane(ret,rhs,dimension,x,sx,cbmask); 
-
-  
+    if ( permute_slice != 0 )   Copy_plane_permute(ret,rhs,dimension,lplane,rplane,cbmask,permute_slice);
+    else                        Copy_plane(ret,rhs,dimension,lplane,rplane,cbmask);
   }
   return ret;
 }
+
 }
 #endif

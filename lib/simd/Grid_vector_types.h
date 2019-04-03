@@ -520,7 +520,20 @@ inline void rbroadcast(Grid_simd<S,V> &ret,const Grid_simd<S,V> &src,const int l
   ret.v = unary<V>(real(typepun[lane]), VsplatSIMD());
 }
 
+////////////////////////////////////////////////////////////////////
+// Split rotate
+////////////////////////////////////////////////////////////////////
+template <class S, class V, IfNotComplex<S> = 0>
+inline void splitRotate(Grid_simd<S,V> &ret, const Grid_simd<S,V> &b, int nrot, int nsplit)
+{
+  ret.v = Optimization::Rotate::splitRotate(b.v, nrot, nsplit);
+}
 
+template <class S, class V, IfComplex<S> = 0>
+inline void splitRotate(Grid_simd<S,V> &ret, const Grid_simd<S,V> &b, int nrot, int nsplit)
+{
+  ret.v = Optimization::Rotate::splitRotate(b.v, 2*nrot, nsplit);
+}
 
 ///////////////////////
 // Splat

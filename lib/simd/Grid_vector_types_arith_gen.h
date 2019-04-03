@@ -55,8 +55,8 @@ namespace Grid
     {
         VECTOR_FOR(i, Opt::W<float_t>::c, 2)
         {
-            ret->v.v[i]   = reinterpret_cast<float_t(&)[2]>(lhs)[0] * rhs->v.v[i]   - reinterpret_cast<float_t(&)[2]>(lhs)[1] * rhs->v.v[i+1];
-            ret->v.v[i+1] = reinterpret_cast<float_t(&)[2]>(lhs)[0] * rhs->v.v[i+1] + reinterpret_cast<float_t(&)[2]>(lhs)[1] * rhs->v.v[i];
+            ret->v.v[i]   = reinterpret_cast<const float_t(&)[2]>( *lhs)[0] * rhs->v.v[i]   - reinterpret_cast<const float_t(&)[2]>( *lhs)[1] * rhs->v.v[i+1];
+            ret->v.v[i+1] = reinterpret_cast<const float_t(&)[2]>( *lhs)[0] * rhs->v.v[i+1] + reinterpret_cast<const float_t(&)[2]>( *lhs)[1] * rhs->v.v[i];
         }
     }
     
@@ -80,8 +80,8 @@ namespace Grid
     {
         VECTOR_FOR(i, Opt::W<float_t>::c, 2)
         {
-            ret->v.v[i]   = lhs->v.v[i] * reinterpret_cast<float_t(&)[2]>(rhs)[0] - lhs->v.v[i+1] * reinterpret_cast<float_t(&)[2]>(rhs)[1];
-            ret->v.v[i+1] = lhs->v.v[i] * reinterpret_cast<float_t(&)[2]>(rhs)[1] + lhs->v.v[i+1] * reinterpret_cast<float_t(&)[2]>(rhs)[0];
+            ret->v.v[i]   = lhs->v.v[i] * reinterpret_cast<const float_t(&)[2]>( *rhs)[0] - lhs->v.v[i+1] * reinterpret_cast<const float_t(&)[2]>( *rhs)[1];
+            ret->v.v[i+1] = lhs->v.v[i] * reinterpret_cast<const float_t(&)[2]>( *rhs)[1] + lhs->v.v[i+1] * reinterpret_cast<const float_t(&)[2]>( *rhs)[0];
         }
     }
     
@@ -132,8 +132,8 @@ namespace Grid
     {
         VECTOR_FOR(i, Opt::W<float_t>::c, 2)
         {
-            ret->v.v[i]   = ret->v.v[i]   + reinterpret_cast<float_t(&)[2]>(lhs)[0] * rhs->v.v[i]   - reinterpret_cast<float_t(&)[2]>(lhs)[1] * rhs->v.v[i+1];
-            ret->v.v[i+1] = ret->v.v[i+1] + reinterpret_cast<float_t(&)[2]>(lhs)[0] * rhs->v.v[i+1] + reinterpret_cast<float_t(&)[2]>(lhs)[1] * rhs->v.v[i];
+            ret->v.v[i]   = ret->v.v[i]   + reinterpret_cast<const float_t(&)[2]>( *lhs)[0] * rhs->v.v[i]   - reinterpret_cast<const float_t(&)[2]>( *lhs)[1] * rhs->v.v[i+1];
+            ret->v.v[i+1] = ret->v.v[i+1] + reinterpret_cast<const float_t(&)[2]>( *lhs)[0] * rhs->v.v[i+1] + reinterpret_cast<const float_t(&)[2]>( *lhs)[1] * rhs->v.v[i];
         }
     }
     
@@ -156,8 +156,8 @@ namespace Grid
     {
         VECTOR_FOR(i, Opt::W<float_t>::c, 2)
         {
-            ret->v.v[i]   = ret->v.v[i]   + lhs->v.v[i] * reinterpret_cast<float_t(&)[2]>(rhs)[0] - lhs->v.v[i+1] * reinterpret_cast<float_t(&)[2]>(rhs)[1];
-            ret->v.v[i+1] = ret->v.v[i+1] + lhs->v.v[i] * reinterpret_cast<float_t(&)[2]>(rhs)[1] + lhs->v.v[i+1] * reinterpret_cast<float_t(&)[2]>(rhs)[0];
+            ret->v.v[i]   = ret->v.v[i]   + lhs->v.v[i] * reinterpret_cast<const float_t(&)[2]>( *rhs)[0] - lhs->v.v[i+1] * reinterpret_cast<const float_t(&)[2]>( *rhs)[1];
+            ret->v.v[i+1] = ret->v.v[i+1] + lhs->v.v[i] * reinterpret_cast<const float_t(&)[2]>( *rhs)[1] + lhs->v.v[i+1] * reinterpret_cast<const float_t(&)[2]>( *rhs)[0];
         }
     }
     
@@ -193,8 +193,8 @@ namespace Grid
     {
         VECTOR_FOR(i, Opt::W<float_t>::c, 2)
         {
-            ret->v.v[i]   = reinterpret_cast<float_t(&)[2]>(lhs)[0] + rhs->v.v[i];
-            ret->v.v[i+1] = reinterpret_cast<float_t(&)[2]>(lhs)[1] + rhs->v.v[i+1];
+            ret->v.v[i]   = reinterpret_cast<const float_t(&)[2]>( *lhs)[0] + rhs->v.v[i];
+            ret->v.v[i+1] = reinterpret_cast<const float_t(&)[2]>( *lhs)[1] + rhs->v.v[i+1];
         }
     }
 
@@ -216,8 +216,8 @@ namespace Grid
     {
         VECTOR_FOR(i, Opt::W<float_t>::c, 2)
         {
-            ret->v.v[i]   = lhs->v.v[i]   + reinterpret_cast<float_t(&)[2]>(rhs)[0];
-            ret->v.v[i+1] = lhs->v.v[i+1] + reinterpret_cast<float_t(&)[2]>(rhs)[1];
+            ret->v.v[i]   = lhs->v.v[i]   + reinterpret_cast<const float_t(&)[2]>( *rhs)[0];
+            ret->v.v[i+1] = lhs->v.v[i+1] + reinterpret_cast<const float_t(&)[2]>( *rhs)[1];
         }
     }
     
@@ -253,8 +253,8 @@ namespace Grid
     {
         VECTOR_FOR(i, Opt::W<float_t>::c, 2)
         {
-            ret->v.v[i]   = reinterpret_cast<float_t(&)[2]>(lhs)[0] - rhs->v.v[i];
-            ret->v.v[i+1] = reinterpret_cast<float_t(&)[2]>(lhs)[1] - rhs->v.v[i+1];
+            ret->v.v[i]   = reinterpret_cast<const float_t(&)[2]>( *lhs)[0] - rhs->v.v[i];
+            ret->v.v[i+1] = reinterpret_cast<const float_t(&)[2]>( *lhs)[1] - rhs->v.v[i+1];
         }
     }
 
@@ -276,8 +276,8 @@ namespace Grid
     {
         VECTOR_FOR(i, Opt::W<float_t>::c, 2)
         {
-            ret->v.v[i]   = lhs->v.v[i]   - reinterpret_cast<float_t(&)[2]>(rhs)[0];
-            ret->v.v[i+1] = lhs->v.v[i+1] - reinterpret_cast<float_t(&)[2]>(rhs)[1];
+            ret->v.v[i]   = lhs->v.v[i]   - reinterpret_cast<const float_t(&)[2]>( *rhs)[0];
+            ret->v.v[i+1] = lhs->v.v[i+1] - reinterpret_cast<const float_t(&)[2]>( *rhs)[1];
         }
     }
     

@@ -106,6 +106,9 @@ class iScalar {
   friend strong_inline void rotate(iScalar<vtype> &out,const iScalar<vtype> &in,int rot){
     rotate(out._internal,in._internal,rot);
   }
+  friend strong_inline void splitRotate(iScalar<vtype> &out,const iScalar<vtype> &in,int rot, int split){
+    splitRotate(out._internal,in._internal,rot, split);
+  }
   friend strong_inline void exchange(iScalar<vtype> &out1,iScalar<vtype> &out2,
 				     const iScalar<vtype> &in1,const iScalar<vtype> &in2,int type){
     exchange(out1._internal,out2._internal,
@@ -254,6 +257,11 @@ class iVector {
       rotate(out._internal[i],in._internal[i],rot);
     }
   }
+  friend strong_inline void splitRotate(iVector<vtype,N> &out,const iVector<vtype,N> &in, int rot, int split){
+    for(int i=0;i<N;i++){
+      splitRotate(out._internal[i],in._internal[i],rot, split);
+    }
+  }
   friend strong_inline void exchange(iVector<vtype,N> &out1,iVector<vtype,N> &out2,
 				     const iVector<vtype,N> &in1,const iVector<vtype,N> &in2,int type){
     for(int i=0;i<N;i++){
@@ -389,6 +397,12 @@ class iMatrix {
     for(int i=0;i<N;i++){
       for(int j=0;j<N;j++){
 	rotate(out._internal[i][j],in._internal[i][j],rot);
+    }}
+  }
+  friend strong_inline void splitRotate(iMatrix<vtype,N> &out,const iMatrix<vtype,N> &in, int rot, int split){
+    for(int i=0;i<N;i++){
+      for(int j=0;j<N;j++){
+      splitRotate(out._internal[i][j],in._internal[i][j],rot, split);
     }}
   }
   friend strong_inline void exchange(iMatrix<vtype,N> &out1,iMatrix<vtype,N> &out2,

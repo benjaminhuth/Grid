@@ -455,6 +455,21 @@ namespace Optimization {
 
       return out;
     }
+    
+    template <typename T>
+    static inline vec<T> splitRotate(const vec<T> &in, const int n, const int split)
+    {
+      vec<T> out;
+      
+      auto w = W<T>::r / split;
+      
+      VECTOR_FOR(i, W<T>::r, 1)
+      {
+        out.v[i] = in.v[(i+n) % w + (i/w)*w];
+      }
+      
+      return out;
+    }
   };
 
   #undef rot
