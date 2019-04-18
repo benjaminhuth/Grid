@@ -70,6 +70,10 @@ public:
     // Might need these at some point
     //    std::vector<int> _lstart;     // local start of array in gcoors. _processor_coor[d]*_ldimensions[d]
     //    std::vector<int> _lend;       // local end of array in gcoors    _processor_coor[d]*_ldimensions[d]+_ldimensions_[d]-1
+    
+    // For extended simd-width (Aurora-SX)
+    std::vector<int> _split;
+    std::vector<int> _rotate;
 
 public:
 

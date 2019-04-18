@@ -171,7 +171,8 @@ template<class vobj> void Scatter_plane_simple (Lattice<vobj> &rhs,commVector<vo
 //////////////////////////////////////////////////////
 // Scatter for when there *is* need to SIMD split
 //////////////////////////////////////////////////////
-template<class vobj> void Scatter_plane_merge(Lattice<vobj> &rhs,std::vector<typename vobj::scalar_object *> pointers,int dimension,int plane,int cbmask)
+template<class vobj> 
+void Scatter_plane_merge(Lattice<vobj> &rhs,std::vector<typename vobj::scalar_object *> pointers,int dimension,int plane,int cbmask)
 {
   int rd = rhs._grid->_rdimensions[dimension];
 
@@ -271,14 +272,8 @@ template<class vobj> void Copy_plane_permute(Lattice<vobj>& lhs,const Lattice<vo
   int stride = rhs._grid->_slice_stride[dimension];
   
   // Calc split and rot for split_rotate:
-  int rot = 1;
-  int split = rhs._grid->_isites / rhs._grid->_simd_layout[0];
-  
-  for(int d=1; d<=dimension; ++d)
-  {
-    rot *= rhs._grid->_simd_layout[d-1];
-    split /= rhs._grid->_simd_layout[d];
-  }
+  int rot   = rhs._grid->_rotate[dimension];
+  int split = rhs._grid->_split[dimension];
 
   parallel_for_nest2(int n=0;n<e1;n++)
   {
