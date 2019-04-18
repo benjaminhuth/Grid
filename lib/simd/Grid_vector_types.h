@@ -441,22 +441,17 @@ class Grid_simd {
   friend inline void permute9(Grid_simd &y, const Grid_simd &b) {
     y.v = Optimization::Permute::Permute9(b.v);
   }
+  
+  // Changed for extended simd-with support (Aurora-SX)
+  // perm is defined in Cartesian_base.h (ExtendedPermuteType)
   friend inline void permute(Grid_simd &y, const Grid_simd &b, const int perm) {
-    if (perm & RotateBit) {
-      int dist = perm & 0xF;
-      y = rotate(b, dist);
-      return;
-    }
-    else if(perm==9) permute9(y, b);
-    else if(perm==8) permute8(y, b);
-    else if(perm==7) permute7(y, b);
-    else if(perm==6) permute6(y, b);
-    else if(perm==5) permute5(y, b);
-    else if(perm==4) permute4(y, b);
-    else if(perm==3) permute3(y, b);
-    else if(perm==2) permute2(y, b);
-    else if(perm==1) permute1(y, b);
-    else if(perm==0) permute0(y, b);
+    static_assert(sizeof(int) == sizeof(int32_t));
+    
+    auto a = reinterpret_cast<const uint16_t *>(&perm);
+    auto rot = a[0];
+    auto split = a[1];
+    
+    splitRotate(y, b, rot, split);
   }
 
   ///////////////////////////////

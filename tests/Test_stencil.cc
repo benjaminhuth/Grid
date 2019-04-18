@@ -112,7 +112,7 @@ int main (int argc, char ** argv)
 	  SE = myStencil.GetEntry(permute_type,0,i);
 	  
 	  if ( SE->_is_local && SE->_permute )
-	    splitRotate(Check._odata[i],Foo._odata[SE->_offset], permute_type*SE->_rotate, SE->_split);
+	    permute(Check._odata[i],Foo._odata[SE->_offset],permute_type);
 	  else if (SE->_is_local)
 	    Check._odata[i] = Foo._odata[SE->_offset];
 	  else { 
@@ -210,7 +210,7 @@ int main (int argc, char ** argv)
 	  //	  std::cout << "Even source "<< i<<" -> " <<SE->_offset << " "<< SE->_is_local<<std::endl;
 
 	  if ( SE->_is_local && SE->_permute )
-	    splitRotate(OCheck._odata[i], EFoo._odata[SE->_offset], permute_type*SE->_rotate, SE->_split);
+	    permute(OCheck._odata[i],EFoo._odata[SE->_offset],permute_type);
 	  else if (SE->_is_local)
 	    OCheck._odata[i] = EFoo._odata[SE->_offset];
 	  else 
@@ -224,7 +224,7 @@ int main (int argc, char ** argv)
 	  //	  std::cout << "ODD source "<< i<<" -> " <<SE->_offset << " "<< SE->_is_local<<std::endl;
 	  
 	  if ( SE->_is_local && SE->_permute )
-	    splitRotate(ECheck._odata[i], OFoo._odata[SE->_offset], permute_type*SE->_rotate, SE->_split);
+	    permute(ECheck._odata[i],OFoo._odata[SE->_offset],permute_type);
 	  else if (SE->_is_local)
 	    ECheck._odata[i] = OFoo._odata[SE->_offset];
 	  else 

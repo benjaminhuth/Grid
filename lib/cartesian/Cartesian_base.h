@@ -143,6 +143,16 @@ public:
     inline int PermuteDim(int dimension){
       return _simd_layout[dimension]>1;
     }
+    
+    // Implemented for extended simd-width support (Aurora-SX). Decodes the two parameters into one int
+    inline int ExtendedPermuteType(int perm, int rot, int split)
+    {
+        static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
+        
+        uint16_t a[2] = { perm * rot, split };
+        return *reinterpret_cast<int *>(a);
+    }
+    
     inline int PermuteType(int dimension){
       int permute_type=0;
       //

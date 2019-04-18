@@ -333,14 +333,19 @@ public:
     inline StencilEntry * GetEntry(int &ptype,int point,int osite) 
     { 
         // Changed for Aurora-SX extended simd-width
-        ptype = _entries[point+_npoints*osite]._permute; return & _entries[point+_npoints*osite]; 
+        auto i = point + _npoints*osite;
+        ptype = _grid->ExtendedPermuteType(_entries[i]._permute, _entries[i]._rotate, _entries[i]._split); 
+        
+        return & _entries[i];  
     }
 
     inline uint64_t GetInfo(int &ptype,int &local,int &perm,int point,int ent,uint64_t base) {
         uint64_t cbase = (uint64_t)&u_recv_buf_p[0];
         local = _entries[ent]._is_local;
         perm  = _entries[ent]._permute;
-        if (perm)  ptype = _entries[ent]._permute_info; 
+        
+        // Changed for Aurora-SX extended simd-width
+        if (perm)  ptype = _grid->ExtendedPermuteType(_entries[ent]._permute, _entries[ent]._rotate, _entries[ent]._split);
         if (local) {
         return  base + _entries[ent]._byte_offset;
         } else {
