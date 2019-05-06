@@ -1,19 +1,14 @@
 #ifndef GRID_VECTOR_TYPES_BASE
 #define GRID_VECTOR_TYPES_BASE
 
-#if defined (GENSVE)
-#pragma message("building for GENSVE")
-#include "Grid_gen_sve.h"
-#elif defined (NEONV8)
-#define GEN_SIMD_WIDTH 16u
-#pragma message("building for NEONv8")
-#include "Grid_neon.h"
-#else
+#ifdef GEN
 #pragma message("building for GEN")
-#include "Grid_generic.h"
+#include "../Grid_generic.h"
+#else
+#error "Must build generic with NEW_SIMD"
 #endif
 
-#include "l1p.h"
+#include "../l1p.h"
 
 namespace Grid {
 
@@ -322,17 +317,9 @@ class Grid_simd {
     y.v = Optimization::Permute::Permute9(b.v);
   }
   
-  // Changed for extended simd-with support (Aurora-SX)
-  // perm is defined in Cartesian_base.h (ExtendedPermuteType)
-  friend inline void permute(Grid_simd &y, const Grid_simd &b, const int perm) {
-    static_assert(sizeof(int) == sizeof(int32_t));
-    
-    auto a = reinterpret_cast<const uint16_t *>(&perm);
-    auto rot = a[0];
-    auto split = a[1];
-    
-    splitRotate(y, b, rot, split);
-  }
+  ///////////////////////////////
+  // General Permute is defined in Vector_types_perm_gen.h
+  ///////////////////////////////
 
   ///////////////////////////////
   // Getting single lanes
@@ -396,19 +383,8 @@ inline void rbroadcast(Grid_simd<S,V> &ret,const Grid_simd<S,V> &src,const int l
 }
 
 ////////////////////////////////////////////////////////////////////
-// Split rotate
+// Split rotate is defined in Vector_types_perm_gen.h
 ////////////////////////////////////////////////////////////////////
-template <class S, class V, IfNotComplex<S> = 0>
-inline void splitRotate(Grid_simd<S,V> &ret, const Grid_simd<S,V> &b, int nrot, int nsplit)
-{
-  ret.v = Optimization::Rotate::splitRotate(b.v, nrot, nsplit);
-}
-
-template <class S, class V, IfComplex<S> = 0>
-inline void splitRotate(Grid_simd<S,V> &ret, const Grid_simd<S,V> &b, int nrot, int nsplit)
-{
-  ret.v = Optimization::Rotate::splitRotate(b.v, 2*nrot, nsplit);
-}
 
 ///////////////////////
 // Splat
@@ -499,36 +475,14 @@ inline void zeroit(Grid_simd<S, V> &z) {
 ///////////////////////
 // Vstream
 ///////////////////////
-template <class S, class V, IfReal<S> = 0>
-inline void vstream(Grid_simd<S, V> &out, const Grid_simd<S, V> &in) {
-  binary<void>((S *)&out.v, in.v, VstreamSIMD());
-}
-template <class S, class V, IfComplex<S> = 0>
-inline void vstream(Grid_simd<S, V> &out, const Grid_simd<S, V> &in) {
-  typedef typename S::value_type T;
-  binary<void>((T *)&out.v, in.v, VstreamSIMD());
-}
-template <class S, class V, IfInteger<S> = 0>
-inline void vstream(Grid_simd<S, V> &out, const Grid_simd<S, V> &in) {
-  out = in;
-}
+
+/* vstream in Vector_types_stream.h /*
 
 ////////////////////////////////////
 // Arithmetic operator overloads +,-,*
 ////////////////////////////////////
-template <class S, class V>
-inline Grid_simd<S, V> operator+(const Grid_simd<S, V> &a, const Grid_simd<S, V> &b) {
-  Grid_simd<S, V> ret;
-  ret.v = binary<V>(a.v, b.v, SumSIMD());
-  return ret;
-};
 
-template <class S, class V>
-inline Grid_simd<S, V> operator-(const Grid_simd<S, V> &a, const Grid_simd<S, V> &b) {
-  Grid_simd<S, V> ret;
-  ret.v = binary<V>(a.v, b.v, SubSIMD());
-  return ret;
-};
+/* operator+ and operator- in Vector_types_arith.h */
 
 // Distinguish between complex types and others
 template <class S, class V, IfComplex<S> = 0>
@@ -546,20 +500,8 @@ inline Grid_simd<S, V> real_madd(const Grid_simd<S, V> &a, const Grid_simd<S, V>
 
 
 // Distinguish between complex types and others
-template <class S, class V, IfComplex<S> = 0>
-inline Grid_simd<S, V> operator*(const Grid_simd<S, V> &a, const Grid_simd<S, V> &b) {
-  Grid_simd<S, V> ret;
-  ret.v = binary<V>(a.v, b.v, MultComplexSIMD());
-  return ret;
-};
 
-// Real/Integer types
-template <class S, class V, IfNotComplex<S> = 0>
-inline Grid_simd<S, V> operator*(const Grid_simd<S, V> &a, const Grid_simd<S, V> &b) {
-  Grid_simd<S, V> ret;
-  ret.v = binary<V>(a.v, b.v, MultSIMD());
-  return ret;
-};
+/* operator* for real and complex in Vector_types_arith_gen.h */
 
 // Distinguish between complex types and others
 template <class S, class V, IfComplex<S> = 0>
@@ -611,38 +553,14 @@ inline Grid_simd<S, V> adj(const Grid_simd<S, V> &in) {
 ///////////////////////
 // timesMinusI
 ///////////////////////
-template <class S, class V, IfComplex<S> = 0>
-inline void timesMinusI(Grid_simd<S, V> &ret, const Grid_simd<S, V> &in) {
-  ret.v = binary<V>(in.v, ret.v, TimesMinusISIMD());
-}
-template <class S, class V, IfComplex<S> = 0>
-inline Grid_simd<S, V> timesMinusI(const Grid_simd<S, V> &in) {
-  Grid_simd<S, V> ret;
-  timesMinusI(ret, in);
-  return ret;
-}
-template <class S, class V, IfNotComplex<S> = 0>
-inline Grid_simd<S, V> timesMinusI(const Grid_simd<S, V> &in) {
-  return in;
-}
+
+/* in Vector_types_arith_gen.h */
 
 ///////////////////////
 // timesI
 ///////////////////////
-template <class S, class V, IfComplex<S> = 0>
-inline void timesI(Grid_simd<S, V> &ret, const Grid_simd<S, V> &in) {
-  ret.v = binary<V>(in.v, ret.v, TimesISIMD());
-}
-template <class S, class V, IfComplex<S> = 0>
-inline Grid_simd<S, V> timesI(const Grid_simd<S, V> &in) {
-  Grid_simd<S, V> ret;
-  timesI(ret, in);
-  return ret;
-}
-template <class S, class V, IfNotComplex<S> = 0>
-inline Grid_simd<S, V> timesI(const Grid_simd<S, V> &in) {
-  return in;
-}
+
+/* in Vector_types_arith_gen.h */
 
 /////////////////////
 // Inner, outer
