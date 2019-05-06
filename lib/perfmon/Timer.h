@@ -39,12 +39,15 @@ namespace Grid {
   // Dress the output; use std::chrono
 
 // C++11 time facilities better?
-inline double usecond(void) {
-  struct timeval tv;
-#ifdef TIMERS_ON
-  gettimeofday(&tv,NULL);
-#endif
-  return 1.0*tv.tv_usec + 1.0e6*tv.tv_sec;
+inline double usecond(void) 
+{
+    auto p = std::chrono::system_clock::now();
+    return std::chrono::duration_cast<std::chrono::microseconds>(p.time_since_epoch()).count();
+//   struct timeval tv;
+// #ifdef TIMERS_ON
+//   gettimeofday(&tv,NULL);
+// #endif
+//   return 1.0*tv.tv_usec + 1.0e6*tv.tv_sec;
 }
 
 typedef  std::chrono::system_clock          GridClock;
