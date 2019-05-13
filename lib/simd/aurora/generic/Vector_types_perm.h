@@ -19,19 +19,23 @@ namespace Grid
     {
         const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
         const static uint16_t de_bruijn = 2479;
+        const static uint16_t max16bit = 65535;
         
         auto a = reinterpret_cast<const uint16_t *>(&perm);
         auto nrot = a[0];
         auto nsplit = a[1];
         
-        int logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
+        uint16_t logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
         
-        int w = Opt::W<float_t>::r >> logs;
-        int logw = table[ uint16_t(w * de_bruijn) >> 12 ];
+        uint16_t w = Opt::W<float_t>::r >> logs;
+        
+        uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];
+    
+        uint16_t mask = max16bit << logw;
         
         VECTOR_FOR(i, Opt::W<float_t>::r, 1)
         {
-            ret.v.v[i] = b.v.v[(i+nrot) % w + ((nrot >> logw) << logw)];
+            ret.v.v[i] = b.v.v[(i+nrot) % w + (i & mask)];
         }        
     }
     
@@ -42,20 +46,24 @@ namespace Grid
     {
         const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
         const static uint16_t de_bruijn = 2479;
+        const static uint16_t max16bit = 65535;
         
         auto a = reinterpret_cast<const uint16_t *>(&perm);
         auto nrot = 2*a[0];
         auto nsplit = a[1];
         
-        int logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
+        uint16_t logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
         
-        int w = Opt::W<float_t>::r >> logs;
-        int logw = table[ uint16_t(w * de_bruijn) >> 12 ];
+        uint16_t w = Opt::W<float_t>::r >> logs;
+        
+        uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];
+    
+        uint16_t mask = max16bit << logw;
         
         VECTOR_FOR(i, Opt::W<float_t>::r, 1)
         {
-            ret.v.v[i] = b.v.v[(i+nrot) % w + ((nrot >> logw) << logw)];
-        }
+            ret.v.v[i] = b.v.v[(i+nrot) % w + (i & mask)];
+        }     
     }
     
     // ROTATE
@@ -73,16 +81,20 @@ namespace Grid
     {
         const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
         const static uint16_t de_bruijn = 2479;
+        const static uint16_t max16bit = 65535;
         
-        int logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
+        uint16_t logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
         
-        int w = Opt::W<float_t>::r >> logs;
-        int logw = table[ uint16_t(w * de_bruijn) >> 12 ];
+        uint16_t w = Opt::W<float_t>::r >> logs;
+        
+        uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];
+    
+        uint16_t mask = max16bit << logw;
         
         VECTOR_FOR(i, Opt::W<float_t>::r, 1)
         {
-            ret.v.v[i] = b.v.v[(i+nrot) % w + ((nrot >> logw) << logw)];
-        }
+            ret.v.v[i] = b.v.v[(i+nrot) % w + (i & mask)];
+        }     
     }
 
     template <class float_t>
@@ -92,17 +104,19 @@ namespace Grid
     {
         const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
         const static uint16_t de_bruijn = 2479;
+        const static uint16_t max16bit = 65535;
         
-        int logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
+        uint16_t logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
         
-        int w = Opt::W<float_t>::r >> logs;
-        int logw = table[ uint16_t(w * de_bruijn) >> 12 ];
+        uint16_t w = Opt::W<float_t>::r >> logs;
         
-        nrot *= 2;
+        uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];
+    
+        uint16_t mask = max16bit << logw;
         
         VECTOR_FOR(i, Opt::W<float_t>::r, 1)
         {
-            ret.v.v[i] = b.v.v[(i + nrot) % w + ((nrot >> logw) << logw)];
+            ret.v.v[i] = b.v.v[(i+2*nrot) % w + (i & mask)];
         }
     }
 }

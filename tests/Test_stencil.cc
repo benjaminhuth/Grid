@@ -126,6 +126,7 @@ int main (int argc, char ** argv)
 	Real nrmB = norm2(Bar);
 	Diff = Check-Bar;
 	Real nrm  = norm2(Diff);
+    
 	std::cout<<GridLogMessage<<"N2diff ="<<nrm<<" "<<nrmC<<" " <<nrmB<<std::endl;
 
 	std::vector<int> coor(4);
