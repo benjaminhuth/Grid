@@ -147,9 +147,8 @@ class Grid_simd {
   ///////////////////////
   // Reduce
   ///////////////////////
-  friend inline Scalar_type Reduce(const Grid_simd &in) {
-    return unary<Scalar_type>(in.v, ReduceSIMD<Scalar_type, Vector_type>());
-  }
+  
+  /* In Vector_types_reduce.h */
 
   ////////////////////////////
   // operator scalar * simd

@@ -5,5 +5,6 @@
 #include "generic/Vector_types_arith.h"
 #include "generic/Vector_types_perm.h"
 #include "generic/Vector_types_stream.h"
+#include "generic/Vector_types_reduce.h"
 
 #endif

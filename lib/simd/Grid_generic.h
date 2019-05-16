@@ -520,7 +520,7 @@ namespace Optimization {
     acc(in.v, a, 0, 2, W<double>::r);
     acc(in.v, b, 1, 2, W<double>::r);
     
-    assert(!isnan(a));
+//     assert(!isnan(a));
 
     return Grid::ComplexD(a, b);
   }
