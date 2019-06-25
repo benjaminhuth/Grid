@@ -17,6 +17,8 @@ namespace Grid
                         const Grid_simd<float_t, Opt::vec<float_t>> &b, 
                         int perm)
     {
+        static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
+        
         const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
         const static uint16_t de_bruijn = 2479;
         const static uint16_t max16bit = 65535;
@@ -44,6 +46,8 @@ namespace Grid
                         const Grid_simd<std::complex<float_t>, Opt::vec<float_t>> &b, 
                         int perm)
     {
+        static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
+        
         const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
         const static uint16_t de_bruijn = 2479;
         const static uint16_t max16bit = 65535;
@@ -79,6 +83,8 @@ namespace Grid
                             const Grid_simd<float_t, Opt::vec<float_t>> &b, 
                             int nrot, int nsplit)
     {
+        static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
+        
         const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
         const static uint16_t de_bruijn = 2479;
         const static uint16_t max16bit = 65535;
@@ -102,6 +108,8 @@ namespace Grid
                             const Grid_simd<std::complex<float_t>, Opt::vec<float_t>> &b, 
                             int nrot, int nsplit)
     {
+        static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
+        
         const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
         const static uint16_t de_bruijn = 2479;
         const static uint16_t max16bit = 65535;

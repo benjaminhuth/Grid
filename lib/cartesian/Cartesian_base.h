@@ -149,7 +149,7 @@ public:
     {
         static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
         
-        uint16_t a[2] = { perm * rot, split };
+        uint16_t a[2] = { static_cast<uint16_t>(perm * rot), static_cast<uint16_t>(split) };
         return *reinterpret_cast<int *>(a);
     }
     

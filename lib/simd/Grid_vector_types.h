@@ -445,7 +445,7 @@ class Grid_simd {
   // Changed for extended simd-with support (Aurora-SX)
   // perm is defined in Cartesian_base.h (ExtendedPermuteType)
   friend inline void permute(Grid_simd &y, const Grid_simd &b, const int perm) {
-    static_assert(sizeof(int) == sizeof(int32_t));
+    static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
     
     auto a = reinterpret_cast<const uint16_t *>(&perm);
     auto rot = a[0];
