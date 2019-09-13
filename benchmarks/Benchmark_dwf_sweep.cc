@@ -69,11 +69,11 @@ int main (int argc, char ** argv)
   std::cout<<GridLogMessage << "Volume \t\t\tProcs \t Dw \t eoDw \t sDw \t eosDw (Mflop/s)  "<<std::endl;
   std::cout<<GridLogMessage << "=========================================================================="<<std::endl;
 
-  int Lmax=16;
+  int Lmax=32;
   int dmin=2;
   if ( getenv("LMAX") ) Lmax=atoi(getenv("LMAX"));
   if ( getenv("DMIN") ) dmin=atoi(getenv("DMIN"));
-  for (int L=8;L<=Lmax;L*=2){
+  for (int L=16;L<=Lmax;L*=2){
     std::vector<int> latt4(4,L);
     for(int d=4;d>dmin;d--){
       if ( d<=3 ) latt4[d]*=2;

@@ -81,7 +81,7 @@ int main (int argc, char ** argv)
   int dmin = 0;
   if ( getenv("LMAX") ) Lmax=atoi(getenv("LMAX"));
   if ( getenv("DMIN") ) dmin=atoi(getenv("DMIN"));
-  for (int L=8; L<=Lmax; L*=2)
+  for (int L=16; L<=Lmax; L*=2)
     {
       std::vector<int> latt_size = std::vector<int>(4,L);
       for(int d=4; d>dmin; d--)
