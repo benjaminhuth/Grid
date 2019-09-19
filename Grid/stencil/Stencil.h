@@ -98,6 +98,10 @@ void Gather_plane_exchange_table(std::vector<std::pair<int,int> >& table,const L
    uint16_t _permute;
    uint16_t _around_the_world; //256 bits, 32 bytes, 1/2 cacheline
    uint16_t _pad;
+   
+   // Added for splitRotate support
+   uint16_t _split;
+   uint16_t _rotate;
  };
 
 ////////////////////////////////////////
@@ -235,15 +239,22 @@ class CartesianStencil { // Stencil runs along coordinate axes only; NO diagonal
   inline int GetNodeLocal(int osite,int point) { 
     return _entries[point+_npoints*osite]._is_local;
   }
-  inline StencilEntry * GetEntry(int &ptype,int point,int osite) { 
-    ptype = _permute_type[point]; return & _entries[point+_npoints*osite]; 
+    inline StencilEntry * GetEntry(int &ptype,int point,int osite) 
+    { 
+        // Changed for Aurora-SX extended simd-width
+        auto i = point + _npoints*osite;
+        ptype = _grid->ExtendedPermuteType(_entries[i]._permute, _entries[i]._rotate, _entries[i]._split); 
+        
+        return & _entries[i];  
   }
 
   inline uint64_t GetInfo(int &ptype,int &local,int &perm,int point,int ent,uint64_t base) {
     uint64_t cbase = (uint64_t)&u_recv_buf_p[0];
     local = _entries[ent]._is_local;
     perm  = _entries[ent]._permute;
-    if (perm)  ptype = _permute_type[point]; 
+        
+        // Changed for Aurora-SX extended simd-width
+        if (perm)  ptype = _grid->ExtendedPermuteType(_entries[ent]._permute, _entries[ent]._rotate, _entries[ent]._split);
     if (local) {
       return  base + _entries[ent]._byte_offset;
     } else {
@@ -602,7 +613,9 @@ class CartesianStencil { // Stencil runs along coordinate axes only; NO diagonal
       
       int fd = _grid->_fdimensions[dimension];
       int rd = _grid->_rdimensions[dimension];
-      _permute_type[point]=_grid->PermuteType(dimension);
+      
+//       Not used for extended VL implementation (NEC SX-Aurora)
+//       _permute_type[point]=_grid->PermuteType(dimension);
       
       _checkerboard = checkerboard;
       
@@ -681,34 +694,36 @@ class CartesianStencil { // Stencil runs along coordinate axes only; NO diagonal
     // the permute type
     int permute_dim =_grid->PermuteDim(dimension);
     
-    for(int x=0;x<rd;x++){       
-      
+        for(int lplane=0;lplane<rd;lplane++)
+        {       
       int o   = 0;
-      int bo  = x * _grid->_ostride[dimension];
+            int bo  = lplane * _grid->_ostride[dimension];
       
       int cb= (cbmask==0x2)? Odd : Even;
       
       int sshift = _grid->CheckerBoardShiftForCB(_checkerboard,dimension,shift,cb);
-      int sx     = (x+sshift)%rd;
+            int rplane = (lplane+sshift)%rd;
       
       int wraparound=0;
-      if ( (shiftpm==-1) && (sx>x)  ) {
+            
+            if( shiftpm == -1 && rplane > lplane )
 	wraparound = 1;
-      }
-      if ( (shiftpm== 1) && (sx<x)  ) {
+            if( shiftpm == 1 && rplane < lplane )
 	wraparound = 1;
-      }
       
       int permute_slice=0;
-      if(permute_dim){
-	int wrap = sshift/rd;
-	int  num = sshift%rd;
-	if ( x< rd-num ) permute_slice=wrap;
-	else permute_slice = (wrap+1)%ly;
+            if(permute_dim)
+            {
+                int rotate_distance = sshift/rd;
+                int copy_distance = sshift%rd;
+                
+                if ( lplane < rd - copy_distance ) 
+                    permute_slice = rotate_distance;
+                else 
+                    permute_slice = (rotate_distance+1)%ly;
       }
       
-      CopyPlane(point,dimension,x,sx,cbmask,permute_slice,wraparound);
-      
+            CopyPlane(point, dimension, lplane, rplane, cbmask, permute_slice, wraparound);
     }
   }
   
@@ -814,6 +829,10 @@ class CartesianStencil { // Stencil runs along coordinate axes only; NO diagonal
 	  _entries[idx]._permute=permute;
 	  _entries[idx]._is_local=1;
 	  _entries[idx]._around_the_world=wrap;
+                    
+                    // Added for splitRotate support (Aurora-SX)
+                    _entries[idx]._split            = _grid->_split[dimension];
+                    _entries[idx]._rotate           = _grid->_rotate[dimension];
 	}
 	o +=_grid->_slice_stride[dimension];
       }
@@ -835,6 +854,10 @@ class CartesianStencil { // Stencil runs along coordinate axes only; NO diagonal
 	    _entries[idx]._is_local=1;
 	    _entries[idx]._permute=permute;
 	    _entries[idx]._around_the_world=wrap;
+                    
+                        // Added for splitRotate support (Aurora-SX)
+                        _entries[idx]._split            = _grid->_split[dimension];
+                        _entries[idx]._rotate           = _grid->_rotate[dimension];
 	  }
 	  
 	}

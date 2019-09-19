@@ -270,6 +270,10 @@ template<class vobj> void Copy_plane_permute(Lattice<vobj>& lhs,const Lattice<vo
   if ( !rhs._grid->CheckerBoarded(dimension) ) {
     cbmask=0x3;
   }
+  
+  // Get split and rot for split_rotate:
+  int rot   = rhs._grid->_rotate[dimension];
+  int split = rhs._grid->_split[dimension];
 
   int ro  = rplane*rhs._grid->_ostride[dimension]; // base offset for start of plane 
   int lo  = lplane*lhs._grid->_ostride[dimension]; // base offset for start of plane 
@@ -298,7 +302,7 @@ template<class vobj> void Copy_plane_permute(Lattice<vobj>& lhs,const Lattice<vo
   }
 
   parallel_for(int i=0;i<ent;i++){
-    permute(lhs._odata[table[i].first],rhs._odata[table[i].second],permute_type);
+    splitRotate(lhs._odata[table[i].first],rhs._odata[table[i].second],permute_type*rot, split);
   }
 }
 
@@ -337,55 +341,37 @@ template<class vobj> void Cshift_local(Lattice<vobj> &ret,const Lattice<vobj> &r
   // the permute type
   ret.checkerboard = grid->CheckerBoardDestination(rhs.checkerboard,shift,dimension);
   int permute_dim =grid->PermuteDim(dimension);
-  int permute_type=grid->PermuteType(dimension);
-  int permute_type_dist;
 
-  for(int x=0;x<rd;x++){       
-
+  for(int lplane=0; lplane<rd; lplane++)
+  {
     int o   = 0;
-    int bo  = x * grid->_ostride[dimension];
+    int bo  = lplane * grid->_ostride[dimension];
     int cb= (cbmask==0x2)? Odd : Even;
 
     int sshift = grid->CheckerBoardShiftForCB(rhs.checkerboard,dimension,shift,cb);
-    int sx     = (x+sshift)%rd;
+    int rplane     = (lplane+sshift)%rd;
     
-    // wrap is whether sshift > rd.
-    //  num is sshift mod rd.
-    // 
-    //  shift 7
-    //
-    //  XoXo YcYc 
-    //  oXoX cYcY
-    //  XoXo YcYc
-    //  oXoX cYcY
-    //
-    //  sshift -- 
-    //
-    //  XX YY ; 3
-    //  XX YY ; 0
-    //  XX YY ; 3
-    //  XX YY ; 0
-    //
     int permute_slice=0;
-    if(permute_dim){
-      int wrap = sshift/rd; wrap=wrap % ly;
-      int  num = sshift%rd;
-
-      if ( x< rd-num ) permute_slice=wrap;
-      else permute_slice = (wrap+1)%ly;
-
-      if ( (ly>2) && (permute_slice) ) {
-	assert(permute_type & RotateBit);
-	permute_type_dist = permute_type|permute_slice;
-      } else {
-	permute_type_dist = permute_type;
-      }
+        
+    if( permute_dim != 0 )
+    {
+        int rotate_distance = sshift/rd; rotate_distance = rotate_distance % ly;
+        int copy_distance = sshift%rd;
+        
+        if ( lplane < rd - copy_distance ) 
+        {
+            permute_slice = rotate_distance;
+        }
+        else
+        {
+            permute_slice = (rotate_distance+1)%ly;
+        }
     }
 
-    if ( permute_slice ) Copy_plane_permute(ret,rhs,dimension,x,sx,cbmask,permute_type_dist);
-    else                 Copy_plane(ret,rhs,dimension,x,sx,cbmask); 
-  
+    if ( permute_slice != 0 )   Copy_plane_permute(ret,rhs,dimension,lplane,rplane,cbmask,permute_slice);
+    else                        Copy_plane(ret,rhs,dimension,lplane,rplane,cbmask);
   }
 }
+
 }
 #endif

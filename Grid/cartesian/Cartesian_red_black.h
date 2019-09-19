@@ -275,9 +275,24 @@ public:
         rvol = rvol * _rdimensions[d];
       }
       _checker_board.resize(rvol);
-      for (int osite = 0; osite < _osites; osite++)
+      for(int osite=0;osite<_osites;osite++){
+	_checker_board[osite] = CheckerBoardFromOindex (osite);
+      }
+      
+        
+      ///////////////////
+      // information for split_rotate functionality
+      ///////////////////
+      _split.resize(_ndimension);
+      _rotate.resize(_ndimension);
+    
+      _rotate[0] = 1;
+      _split[0]  = _isites / _simd_layout[0];
+    
+      for(int d=1; d<_ndimension; ++d)
       {
-        _checker_board[osite] = CheckerBoardFromOindex(osite);
+        _rotate[d] = _rotate[d-1] * _simd_layout[d-1];
+        _split[d]  = _split[d-1]  / _simd_layout[d];
       }
     };
 

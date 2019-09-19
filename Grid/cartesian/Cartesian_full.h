@@ -167,8 +167,25 @@ public:
         _slice_nblock[d] = nblock;
         block = block * _rdimensions[d];
       }
-    };
-
+        
+      ///////////////////////
+      // information for split_rotate functionality
+      ///////////////////////
+      _split.resize(_ndimension);
+      _rotate.resize(_ndimension);
+      
+      _rotate[0] = 1;
+      _split[0]  = _isites / _simd_layout[0];
+      
+      for(int d=1; d<_ndimension; ++d)
+      {
+          _rotate[d] = _rotate[d-1] * _simd_layout[d-1];
+          _split[d]  = _split[d-1]  / _simd_layout[d];
+      }
+      
+    }
 };
+
+
 }
 #endif
