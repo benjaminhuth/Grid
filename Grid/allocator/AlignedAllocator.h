@@ -40,6 +40,9 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 #include <mm_malloc.h>
 #endif
 
+// Add header for NEC SX-Aurora
+#include <algorithm>
+
 namespace Grid {
 
   class PointerCache {

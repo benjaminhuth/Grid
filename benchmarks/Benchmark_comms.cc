@@ -27,6 +27,9 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
     /*  END LEGAL */
 #include <Grid/Grid.h>
 
+// Inserted for NEC SX-Aurora
+#include <strings.h>
+
 using namespace std;
 using namespace Grid;
 using namespace Grid::QCD;

@@ -28,6 +28,10 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 
 #include <Grid/GridCore.h>
 
+// Inserted for NEC SX-Aurora
+#include <strings.h>
+
+
 namespace Grid { 
 
 // static data

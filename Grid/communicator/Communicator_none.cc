@@ -27,6 +27,9 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
     /*  END LEGAL */
 #include <Grid/GridCore.h>
 
+// Inserted for NEC SX-Aurora
+#include <strings.h>
+
 namespace Grid {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
