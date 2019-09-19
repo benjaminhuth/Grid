@@ -172,7 +172,13 @@ namespace Grid {
 
 };
 
-#include <Grid/simd/Grid_vector_types.h>
+#ifdef NEW_SIMD
+    #include <Grid/simd/aurora/Grid_vector_types.h>
+    #pragma message("use new Grid_vector_implementation")
+#else
+    #include <Grid/simd/Grid_vector_types.h>
+#endif
+
 #include <Grid/simd/Grid_vector_unops.h>
 
 namespace Grid {
