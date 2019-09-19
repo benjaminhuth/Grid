@@ -1,6 +1,14 @@
 #pragma once
 //#include <Grid/Hadrons/Global.hpp>
+
+// Change for NEC SX-Aurora: fix unsupported alignment by disabling __attribute__
+#ifdef __ve__
+#define __attribute__(n)
 #include <Grid/Eigen/unsupported/CXX11/Tensor>
+#undef __attribute__
+#else
+#include <Grid/Eigen/unsupported/CXX11/Tensor>
+#endif
 
 namespace Grid {
 namespace QCD {

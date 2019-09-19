@@ -31,7 +31,16 @@ See the full license in the file "LICENSE" in the top level distribution directo
 
 #include <Hadrons/Global.hpp>
 #include <Hadrons/TimerArray.hpp>
+
+// Redefine prefetch and undefine attributes for Eigen for NEC SX-Aurora
+#ifdef __ve__
+#define __builtin_prefetch(addr) __builtin_vprefetch(addr, 1)
 #include <Grid/Eigen/unsupported/CXX11/Tensor>
+#undef __builtin_prefetch
+#else
+#include <Grid/Eigen/LU>
+#endif
+
 #ifdef USE_MKL
 #include "mkl.h"
 #include "mkl_cblas.h"

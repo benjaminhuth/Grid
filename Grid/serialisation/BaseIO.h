@@ -33,7 +33,15 @@ Author: Guido Cossu <guido.cossu@ed.ac.uk>
 #include <type_traits>
 #include <Grid/tensors/Tensors.h>
 #include <Grid/serialisation/VectorUtils.h>
+
+// Change for NEC SX-Aurora: fix unsupported alignment by disabling __attribute__
+#ifdef __ve__
+#define __attribute__(n)
 #include <Grid/Eigen/unsupported/CXX11/Tensor>
+#undef __attribute__
+#else
+#include <Grid/Eigen/unsupported/CXX11/Tensor>
+#endif
 
 namespace Grid {
   namespace EigenIO {
