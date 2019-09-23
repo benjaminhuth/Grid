@@ -9,7 +9,7 @@
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-#ifdef __ve__
+#ifdef __NEC_VERSION__
     #warning "building for NEC SX-Aurora"
     
     // SX-Aurora doesn't allow alignment > 8 byte
