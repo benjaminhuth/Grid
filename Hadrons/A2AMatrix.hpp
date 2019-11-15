@@ -36,8 +36,10 @@ See the full license in the file "LICENSE" in the top level distribution directo
 #ifdef __NEC_VERSION__
 #define __builtin_prefetch(addr) __builtin_vprefetch(addr, 1)
 #include <Grid/Eigen/unsupported/CXX11/Tensor>
+#include <Grid/Eigen/LU>
 #undef __builtin_prefetch
 #else
+#include <Grid/Eigen/unsupported/CXX11/Tensor>
 #include <Grid/Eigen/LU>
 #endif
 

@@ -507,11 +507,13 @@ void GlobalSharedMemory::SharedMemoryAllocate(uint64_t bytes, int flags)
       ftruncate(fd, size);
 	
       int mmap_flag = MAP_SHARED;
-#ifdef MAP_POPULATE 
-      mmap_flag |= MAP_POPULATE;
+#ifdef MAP_POPULATE  
+//       std::cout << "MAP_POPULATE = " << MAP_POPULATE << std::endl;
+//       mmap_flag |= MAP_POPULATE;
 #endif
-#ifdef MAP_HUGETLB
-      if (flags) mmap_flag |= MAP_HUGETLB;
+#ifdef MAP_HUGETLB 
+//       std::cout << "MAP_HUGETLB = " << MAP_HUGETLB << std::endl;
+//       if (flags) mmap_flag |= MAP_HUGETLB;
 #endif
       void * ptr =  mmap(NULL,size, PROT_READ | PROT_WRITE, mmap_flag, fd, 0);
       
