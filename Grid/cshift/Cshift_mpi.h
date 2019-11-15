@@ -164,7 +164,7 @@ template<class vobj> void Cshift_comms(Lattice<vobj> &ret,const Lattice<vobj> &r
 }
 
 template<class vobj> void  Cshift_comms_simd(Lattice<vobj> &ret,const Lattice<vobj> &rhs,int dimension,int shift,int cbmask)
-{
+{    
   GridBase *grid=rhs._grid;
   const int Nsimd = grid->Nsimd();
   typedef typename vobj::vector_type vector_type;
@@ -175,6 +175,7 @@ template<class vobj> void  Cshift_comms_simd(Lattice<vobj> &ret,const Lattice<vo
   int rd = grid->_rdimensions[dimension];
   int ld = grid->_ldimensions[dimension];
   int pd = grid->_processors[dimension];
+  int is = grid->_istride[dimension];
   int simd_layout     = grid->_simd_layout[dimension];
   int comm_dim        = grid->_processors[dimension] >1 ;
 
@@ -183,11 +184,11 @@ template<class vobj> void  Cshift_comms_simd(Lattice<vobj> &ret,const Lattice<vo
   //    << " comm_dim " << comm_dim << " cbmask " << cbmask <<std::endl;
 
   assert(comm_dim==1);
-  assert(simd_layout==2);
+//   assert(simd_layout==2);
   assert(shift>=0);
   assert(shift<fd);
 
-  int permute_type=grid->PermuteType(dimension);
+//   int permute_type=grid->PermuteType(dimension);
 
   ///////////////////////////////////////////////
   // Simd direction uses an extract/merge pair
@@ -221,23 +222,26 @@ template<class vobj> void  Cshift_comms_simd(Lattice<vobj> &ret,const Lattice<vo
 
     for(int i=0;i<Nsimd;i++){
       
-      int inner_bit = (Nsimd>>(permute_type+1));
-      int ic= (i&inner_bit)? 1:0;
+//       int inner_bit = (Nsimd>>(permute_type+1));
+      int ic= grid->InnerSimdCoord(i, dimension); //(i&inner_bit)? 1:0;
 
-      int my_coor          = rd*ic + x;
-      int nbr_coor         = my_coor+sshift;
-      int nbr_proc = ((nbr_coor)/ld) % pd;// relative shift in processors
+      int my_coor       = rd*ic + x;             // coordinate in local grid
+      int nbr_coor      = my_coor+sshift;        // nbr coordinate in local grid
+      int nbr_proc      = ((nbr_coor)/ld) % pd;  // relative shift in processors
 
-      int nbr_ic   = (nbr_coor%ld)/rd;    // inner coord of peer
-      int nbr_ox   = (nbr_coor%rd);       // outer coord of peer
-      int nbr_lane = (i&(~inner_bit));
+//       int nbr_ic   = (nbr_coor%ld)/rd;    // inner coord of peer
+//       int nbr_ox   = (nbr_coor%rd);       // outer coord of peer
+//       int nbr_lane = (i&(~inner_bit));
+//       if (nbr_ic) nbr_lane|=inner_bit;
+
+      int nbr_coor_rot  = nbr_coor % ld;           
+      int simd_offset   = nbr_coor_rot / rd - my_coor / rd;
+      int nbr_lane      = i + simd_offset * is;
 
       int recv_from_rank;
       int xmit_to_rank;
-
-      if (nbr_ic) nbr_lane|=inner_bit;
-
-      assert (sx == nbr_ox);
+      
+//       std::cout << "lplane = " << x << ", rplane = " << sx << ", i = " << i << ", simd_offset = " << simd_offset << ", nbr_lane = " << nbr_lane << std::endl;
 
       if(nbr_proc){
 	grid->ShiftedRanks(dimension,nbr_proc,xmit_to_rank,recv_from_rank); 

@@ -163,32 +163,26 @@ public:
         return *reinterpret_cast<int *>(a);
     }
     
-    inline int PermuteType(int dimension){
-      int permute_type=0;
-      //
-      // FIXME:
-      //
-      // Best way to encode this would be to present a mask 
-      // for which simd dimensions are rotated, and the rotation
-      // size. If there is only one simd dimension rotated, this is just 
-      // a permute. 
-      //
-      // Cases: PermuteType == 1,2,4,8
-      // Distance should be either 0,1,2..
-      //
-      if ( _simd_layout[dimension] > 2 ) { 
-        for(int d=0;d<_ndimension;d++){
-          if ( d != dimension ) assert ( (_simd_layout[d]==1)  );
+    // Implemented to calc ic for shifting operations (better implementation possible? maybe lookup-table?)
+    inline int InnerSimdCoord(int simd, int dim)
+    {
+        for(int d=_ndimension-1; d >= 0; --d)
+        {
+            int icoor = simd / _rotate[d];
+            if(dim == d) return icoor;
+            simd -= icoor * _rotate[d]; 
         }
-        permute_type = RotateBit; // How to specify distance; this is not just direction.
-        return permute_type;
-      }
-
-      for(int d=_ndimension-1;d>dimension;d--){
-        if (_simd_layout[d]>1 ) permute_type++;
-      }
-      return permute_type;
+        
+        assert(("Should never reach this point", 0));
+        return -1;
     }
+    
+    inline int PermuteType(int dimension)
+    {
+        assert(("Should not be called in implementation for NEC SX-Aurora", 0));
+        return 0;
+    }
+    
     ////////////////////////////////////////////////////////////////
     // Array sizing queries
     ////////////////////////////////////////////////////////////////
