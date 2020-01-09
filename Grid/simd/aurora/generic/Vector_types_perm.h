@@ -4,6 +4,25 @@
 #include <cassert>
 #include "../Vector_types_base.h"
 
+// Tried to do this with C++ functions, but performance drop with nc++...
+#define SPLIT_ROTATE_MACRO(out, in, vl, s, r)                                                   \
+    static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");    \
+                                                                                                \
+    const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };   \
+    const static uint16_t de_bruijn = 2479;                                                     \
+    const static uint16_t max16bit = 65535;                                                     \
+                                                                                                \
+    uint16_t logs = table[ uint16_t(s * de_bruijn) >> 12 ];                                     \
+    uint16_t w = vl >> logs;                                                                    \
+                                                                                                \
+    uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];                                     \
+    uint16_t mask = max16bit << logw;                                                           \
+                                                                                                \
+    VECTOR_FOR(i, vl, 1)                                                                        \
+    {                                                                                           \
+        out[i] = in[(i+r) - ((i+r) & mask) + (i & mask)];                                       \
+    }
+    
 namespace Grid 
 {
     namespace Opt = Grid::Optimization;
@@ -17,28 +36,11 @@ namespace Grid
                         const Grid_simd<float_t, Opt::vec<float_t>> &b, 
                         int perm)
     {
-        static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
-        
-        const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
-        const static uint16_t de_bruijn = 2479;
-        const static uint16_t max16bit = 65535;
-        
         auto a = reinterpret_cast<const uint16_t *>(&perm);
-        auto nrot = a[0];
+        auto nrot   = a[0];
         auto nsplit = a[1];
         
-        uint16_t logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
-        
-        uint16_t w = Opt::W<float_t>::r >> logs;
-        
-        uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];
-    
-        uint16_t mask = max16bit << logw;
-        
-        VECTOR_FOR(i, Opt::W<float_t>::r, 1)
-        {
-            ret.v.v[i] = b.v.v[(i+nrot) % w + (i & mask)];
-        }        
+        SPLIT_ROTATE_MACRO(ret.v.v, b.v.v, Opt::W<float_t>::r, nsplit, nrot);       
     }
     
     template <class float_t>
@@ -46,28 +48,11 @@ namespace Grid
                         const Grid_simd<std::complex<float_t>, Opt::vec<float_t>> &b, 
                         int perm)
     {
-        static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
-        
-        const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
-        const static uint16_t de_bruijn = 2479;
-        const static uint16_t max16bit = 65535;
-        
         auto a = reinterpret_cast<const uint16_t *>(&perm);
-        auto nrot = 2*a[0];
-        auto nsplit = a[1];
+        auto nrot   = 2*a[0];
+        auto nsplit =   a[1];
         
-        uint16_t logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
-        
-        uint16_t w = Opt::W<float_t>::r >> logs;
-        
-        uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];
-    
-        uint16_t mask = max16bit << logw;
-        
-        VECTOR_FOR(i, Opt::W<float_t>::r, 1)
-        {
-            ret.v.v[i] = b.v.v[(i+nrot) % w + (i & mask)];
-        }     
+        SPLIT_ROTATE_MACRO(ret.v.v, b.v.v, Opt::W<float_t>::r, nsplit, nrot);     
     }
     
     // ROTATE
@@ -83,24 +68,7 @@ namespace Grid
                             const Grid_simd<float_t, Opt::vec<float_t>> &b, 
                             int nrot, int nsplit)
     {
-        static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
-        
-        const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
-        const static uint16_t de_bruijn = 2479;
-        const static uint16_t max16bit = 65535;
-        
-        uint16_t logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
-        
-        uint16_t w = Opt::W<float_t>::r >> logs;
-        
-        uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];
-    
-        uint16_t mask = max16bit << logw;
-        
-        VECTOR_FOR(i, Opt::W<float_t>::r, 1)
-        {
-            ret.v.v[i] = b.v.v[(i+nrot) % w + (i & mask)];
-        }     
+        SPLIT_ROTATE_MACRO(ret.v.v, b.v.v, Opt::W<float_t>::r, nsplit, nrot);     
     }
 
     template <class float_t>
@@ -108,25 +76,10 @@ namespace Grid
                             const Grid_simd<std::complex<float_t>, Opt::vec<float_t>> &b, 
                             int nrot, int nsplit)
     {
-        static_assert(sizeof(int) == sizeof(int32_t), "Implementation assumes int to be 32bit");
-        
-        const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
-        const static uint16_t de_bruijn = 2479;
-        const static uint16_t max16bit = 65535;
-        
-        uint16_t logs = table[ uint16_t(nsplit * de_bruijn) >> 12 ];
-        
-        uint16_t w = Opt::W<float_t>::r >> logs;
-        
-        uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];
-    
-        uint16_t mask = max16bit << logw;
-        
-        VECTOR_FOR(i, Opt::W<float_t>::r, 1)
-        {
-            ret.v.v[i] = b.v.v[(i+2*nrot) % w + (i & mask)];
-        }
+        SPLIT_ROTATE_MACRO(ret.v.v, b.v.v, Opt::W<float_t>::r, nsplit, 2*nrot);  
     }
 }
+
+#undef SPLIT_ROTATE_MACRO
 
 #endif

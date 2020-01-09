@@ -461,11 +461,19 @@ namespace Optimization {
     {
       vec<T> out;
       
-      auto w = W<T>::r / split;
+      const static uint16_t table[] = { 0, 1, 2, 5, 3, 9, 6, 11, 15, 4, 8, 10, 14, 7, 13, 12 };
+      const static uint16_t de_bruijn = 2479;
+      const static uint16_t max16bit = 65535;
       
+      uint16_t logs = table[ uint16_t(split * de_bruijn) >> 12 ];
+      uint16_t w = W<T>::r >> logs;
+      
+      uint16_t logw = table[ uint16_t(w * de_bruijn) >> 12 ];                                     
+      uint16_t mask = max16bit << logw;                                                           
+    
       VECTOR_FOR(i, W<T>::r, 1)
       {
-        out.v[i] = in.v[(i+n) % w + (i/w)*w];
+        out.v[i] = in.v[(i+n) - ((i+n) & mask) + (i & mask)];
       }
       
       return out;
