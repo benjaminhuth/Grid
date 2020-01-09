@@ -64,6 +64,9 @@ directory
 #if defined QPX
 #include "Grid_qpx.h"
 #endif
+#ifdef VE
+#include "Grid_aurora.h"
+#endif
 
 #include "l1p.h"
 
@@ -534,7 +537,7 @@ inline void splitRotate(Grid_simd<S,V> &ret, const Grid_simd<S,V> &b, int nrot, 
 template <class S, class V, IfComplex<S> = 0>
 inline void splitRotate(Grid_simd<S,V> &ret, const Grid_simd<S,V> &b, int nrot, int nsplit)
 {
-  ret.v = Optimization::Rotate::splitRotate(b.v, 2*nrot, nsplit);
+  ret.v = Optimization::Rotate::splitRotateComplex(b.v, nrot, nsplit);
 }
 
 ///////////////////////

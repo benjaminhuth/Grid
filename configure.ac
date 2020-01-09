@@ -302,6 +302,9 @@ case ${ax_cv_cxx_compiler_vendor} in
       QPX|BGQ)
         AC_DEFINE([QPX],[1],[QPX intrinsics for BG/Q])
         SIMD_FLAGS='';;
+      VE)
+        AC_DEFINE([VE],[1],[ve intrinsics for NEX SX-Aurora])
+        SIMD_FLAGS='';;
       *)
         AC_MSG_ERROR(["SIMD option ${ac_SIMD} not supported by the GCC/Clang compiler"]);;
     esac;;

@@ -478,6 +478,12 @@ namespace Optimization {
       
       return out;
     }
+        
+    template <typename T>
+    static inline vec<T> splitRotateComplex(const vec<T> &in, const int n, const int split)
+    {
+      return splitRotate(in, 2*n, split);
+    }
   };
 
   #undef rot

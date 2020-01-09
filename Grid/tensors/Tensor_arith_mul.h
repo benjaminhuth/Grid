@@ -28,6 +28,10 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 #ifndef GRID_MATH_ARITH_MUL_H
 #define GRID_MATH_ARITH_MUL_H
 
+#if defined(__clang__) && defined(__ve__)
+#include "velintrin.h"
+#endif
+
 namespace Grid {
 
 
@@ -39,6 +43,48 @@ template<class rtype,class vtype,class mtype>
 strong_inline void mult(iScalar<rtype> * __restrict__ ret,const iScalar<mtype> * __restrict__ lhs,const iScalar<vtype> * __restrict__ rhs){
     mult(&ret->_internal,&lhs->_internal,&rhs->_internal);
 }
+
+#if defined(__clang__) && defined(__ve__) && defined(VE)
+strong_inline void mult(iMatrix<vComplexD,3> * __restrict__ ret, const iMatrix<vComplexD,3> * __restrict__ lhs, const iMatrix<vComplexD,3> * __restrict__ rhs)
+{
+    __vr y_re_mat[3][3]; 
+    __vr y_im_mat[3][3];
+    
+    for(int i=0; i < 3; ++i)
+        for(int j=0; j < 3; ++j)
+        {
+            y_re_mat[i][j] = _vel_vld_vssl(16, &(rhs->_internal[i][j].v.v[0]), 256);
+            y_im_mat[i][j] = _vel_vld_vssl(16, &(rhs->_internal[i][j].v.v[1]), 256);
+        }
+        
+    for(int i=0; i < 3; ++i)
+    {
+        __vr x_re_row[3];
+        __vr x_im_row[3];
+        
+        for(int k = 0; k < 3; ++k)
+        {
+            x_re_row[k] = _vel_vld_vssl(16, &(rhs->_internal[i][k].v.v[0]), 256);
+            x_im_row[k] = _vel_vld_vssl(16, &(rhs->_internal[i][k].v.v[0]), 256);
+        }
+        
+        for(int j=0; j < 3; ++j)
+        {               
+            auto res_re = _vel_vfmsbd_vvvvl( _vel_vfmuld_vvvl( x_im_row[0], y_im_mat[0][j], 256 ), x_re_row[0], y_re_mat[0][j], 256 );
+            auto res_im = _vel_vfmadd_vvvvl( _vel_vfmuld_vvvl( x_im_row[0], y_re_mat[0][j], 256 ), x_re_row[0], y_im_mat[0][j], 256 );
+            
+            for(int k = 1; k < 3; ++k)
+            {
+                res_re = _vel_vfmsbd_vvvvl( _vel_vfmsbd_vvvvl( res_re, x_im_row[k], y_im_mat[k][j], 256 ), x_re_row[k], y_re_mat[k][j], 256 );
+                res_im = _vel_vfmadd_vvvvl( _vel_vfmadd_vvvvl( res_im, x_im_row[k], y_re_mat[k][j], 256 ), x_re_row[k], y_im_mat[k][j], 256 );
+            }
+            
+            _vel_vst_vssl(res_re, 16, &(ret->_internal[i][j].v.v[0]), 256);
+            _vel_vst_vssl(res_im, 16, &(ret->_internal[i][j].v.v[1]), 256);
+        }
+    }
+}
+#endif
 
 template<class rrtype,class ltype,class rtype,int N>
 strong_inline void mult(iMatrix<rrtype,N> * __restrict__ ret,const iMatrix<ltype,N> * __restrict__ lhs,const iMatrix<rtype,N> * __restrict__ rhs){
