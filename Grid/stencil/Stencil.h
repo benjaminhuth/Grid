@@ -615,7 +615,7 @@ void Communicate(void)
     {
         parallel_for(int o=0; o < mm[i].buffer_size; ++o)
         {
-            merge(mm[i].mpointer[o], mm[i].rpointers,o);
+            merge1(mm[i].mpointer[o], mm[i].rpointers,o);
         }
     }
     mergetime+=usecond();
