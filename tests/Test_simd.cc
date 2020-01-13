@@ -329,65 +329,28 @@ void IntReductionTester(const functor &func)
   assert(ok==0);
 }
 
-
-class funcPermute {
+// Remove rotate/permute/exchange tester, add split-rotate-tester
+class funcSplitRotate 
+{
 public:
-  int n;
-  funcPermute(int _n) { n=_n;};
-  template<class vec>    void operator()(vec &rr,vec &i1,vec &i2) const { permute(rr,i1,n);}
-  template<class scal>   void apply(std::vector<scal> &rr,std::vector<scal> &in)  const { 
-    int sz=in.size();
-    int msk = sz>>(n+1);
-    for(int i=0;i<sz;i++){
-      rr[i] = in[ i^msk ];
-    }
-  }
-  std::string name(void) const { return std::string("Permute"); }
-};
-
-class funcExchange {
-public:
-  int n;
-  funcExchange(int _n) { n=_n;};
-  template<class vec>    void operator()(vec &r1,vec &r2,vec &i1,vec &i2) const { exchange(r1,r2,i1,i2,n);}
-  template<class scal>   void apply(std::vector<scal> &r1,
-				    std::vector<scal> &r2,
-				    std::vector<scal> &in1,
-				    std::vector<scal> &in2)  const 
+  int split, n;
+  funcSplitRotate(int _s, int _r) : split(_s), n(_r) {}
+  template<class vec>    void operator()(vec &rr,vec &i1,vec &i2) const { splitRotate(rr,i1,n,split);}
+  template<class scal>   void apply(std::vector<scal> &rr,std::vector<scal> &in)  const 
   { 
-    int sz=in1.size();
-    int msk = sz>>(n+1);
-
-    for(int i=0;i<sz;i++) {
-      int j1 = i&(~msk);
-      int j2 = i|msk;
-      if  ( (i&msk) == 0 ) { r1[i]=in1[j1];}
-      else                 { r1[i]=in2[j1];}
-
-      if  ( (i&msk) == 0 ) { r2[i]=in1[j2];}
-      else                 { r2[i]=in2[j2];}
-    }      
-  }
-  std::string name(void) const { return std::string("Exchange"); }
-};
-
-class funcRotate {
-public:
-  int n;
-  funcRotate(int _n) { n=_n;};
-  template<class vec>    void operator()(vec &rr,vec &i1,vec &i2) const { rr=rotate(i1,n);}
-  template<class scal>   void apply(std::vector<scal> &rr,std::vector<scal> &in)  const { 
-    int sz = in.size();
-    for(int i=0;i<sz;i++){
-      rr[i] = in[(i+n)%sz];
+    int sz=in.size();
+    auto w = sz / split;
+    
+    for(int i=0; i<sz; ++i)
+    {
+      rr[i] = in[(i+n) % w + (i/w)*w];
     }
   }
-  std::string name(void) const { return std::string("Rotate"); }
+  std::string name(void) const { return std::string("SplitRotate"); }
 };
-
 
 template<class scal, class vec,class functor > 
-void PermTester(const functor &func)
+void SplitRotateTester(const functor &func)
 {
   GridSerialRNG          sRNG;
   sRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
@@ -452,99 +415,12 @@ void PermTester(const functor &func)
 }
 
 
-template<class scal, class vec,class functor > 
-void ExchangeTester(const functor &func)
-{
-  GridSerialRNG          sRNG;
-  sRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
-  
-  int Nsimd = vec::Nsimd();
-
-  std::vector<scal> input1(Nsimd);
-  std::vector<scal> input2(Nsimd);
-  std::vector<scal> result1(Nsimd);
-  std::vector<scal> result2(Nsimd);
-  std::vector<scal> reference1(Nsimd);
-  std::vector<scal> reference2(Nsimd);
-  std::vector<scal> test1(Nsimd);
-  std::vector<scal> test2(Nsimd);
-
-  std::vector<vec,alignedAllocator<vec> > buf(6);
-  vec & v_input1 = buf[0];
-  vec & v_input2 = buf[1];
-  vec & v_result1 = buf[2];
-  vec & v_result2 = buf[3];
-  vec & v_test1 = buf[4];
-  vec & v_test2 = buf[5];
-
-  for(int i=0;i<Nsimd;i++){
-    random(sRNG,input1[i]);
-    random(sRNG,input2[i]);
-    random(sRNG,result1[i]);
-    random(sRNG,result2[i]);
-  }
-
-  merge<vec,scal>(v_input1,input1);
-  merge<vec,scal>(v_input2,input2);
-  merge<vec,scal>(v_result1,result1);
-  merge<vec,scal>(v_result2,result1);
-
-  func(v_result1,v_result2,v_input1,v_input2);
-  func.apply(reference1,reference2,input1,input2);
-
-  func(v_test1,v_test2,v_result1,v_result2);
-
-  extract<vec,scal>(v_result1,result1);
-  extract<vec,scal>(v_result2,result2);
-  extract<vec,scal>(v_test1,test1);
-  extract<vec,scal>(v_test2,test2);
-
-  std::cout<<GridLogMessage << " " << func.name() << " " <<func.n <<std::endl;
-
-  //for(int i=0;i<Nsimd;i++) std::cout << " i "<<i<<" ref "<<reference1[i]<<" res "<<result1[i]<<std::endl;
-  //for(int i=0;i<Nsimd;i++) std::cout << " i "<<i<<" ref "<<reference2[i]<<" res "<<result2[i]<<std::endl;
-
-  for(int i=0;i<Nsimd;i++){
-    int found=0;
-    for(int j=0;j<Nsimd;j++){
-      if(reference1[j]==result1[i]) {
-	found=1;
-	//	std::cout << " i "<<i<<" j "<<j<<" "<<reference1[j]<<" "<<result1[i]<<std::endl;
-      }
-    }
-    //    assert(found==1);
-  }
-  for(int i=0;i<Nsimd;i++){
-    int found=0;
-    for(int j=0;j<Nsimd;j++){
-      if(reference2[j]==result2[i]) {
-	found=1;
-	//	std::cout << " i "<<i<<" j "<<j<<" "<<reference2[j]<<" "<<result2[i]<<std::endl;
-      }
-    }
-    //    assert(found==1);
-  }
-
-  /*
-  for(int i=0;i<Nsimd;i++){
-    std::cout << " i "<< i
-	      <<" result1  "<<result1[i]
-	      <<" result2  "<<result2[i]
-	      <<" test1  "<<test1[i]
-	      <<" test2  "<<test2[i]
-	      <<" input1 "<<input1[i]
-	      <<" input2 "<<input2[i]<<std::endl;
-  }
-  */
-  for(int i=0;i<Nsimd;i++){
-    assert(test1[i]==input1[i]);
-    assert(test2[i]==input2[i]);
-  }
-}
-
-
 int main (int argc, char ** argv)
 {
+  // For splitRotate, should be sufficient for any 4-dim-lattice.
+  auto vrot = { 1, 4, 16, 64 };
+  auto vsplit = { 64, 16, 4, 1 };
+  
   Grid_init(&argc,&argv);
 
   std::vector<int> latt_size   = GridDefaultLatt();
@@ -570,33 +446,14 @@ int main (int argc, char ** argv)
   Tester<RealF,vRealF>(funcConj());
   Tester<RealF,vRealF>(funcInnerProduct());
   ReductionTester<RealF,RealF,vRealF>(funcReduce());
-
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vRealF permutes "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-
-  // Log2 iteration
-  for(int i=0;(1<<i)< vRealF::Nsimd();i++){
-    PermTester<RealF,vRealF>(funcPermute(i));
-  }
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vRealF exchanges "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-
-  // Log2 iteration
-  for(int i=0;(1<<i)< vRealF::Nsimd();i++){
-    ExchangeTester<RealF,vRealF>(funcExchange(i));
-  }
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vRealF rotate "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  for(int r=0;r<vRealF::Nsimd();r++){
-    PermTester<RealF,vRealF>(funcRotate(r));
-  }
-
+  
+  std::cout << GridLogMessage <<"==================================="<<  std::endl;
+  std::cout << GridLogMessage <<"Testing vRealF SplitRotate"<<std::endl;
+  std::cout << GridLogMessage <<"==================================="<<  std::endl;
+    
+  for( auto rot : vrot )
+    for( auto split : vsplit )
+      SplitRotateTester<RealF, vRealF>(funcSplitRotate(rot, split));
 
   std::cout << GridLogMessage <<"==================================="<<  std::endl;
   std::cout << GridLogMessage <<"Testing vRealD "<<std::endl;
@@ -610,33 +467,14 @@ int main (int argc, char ** argv)
   Tester<RealD,vRealD>(funcConj());
   Tester<RealD,vRealD>(funcInnerProduct());
   ReductionTester<RealD,RealD,vRealD>(funcReduce());
-
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vRealD permutes "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-
-  // Log2 iteration
-  for(int i=0;(1<<i)< vRealD::Nsimd();i++){
-    PermTester<RealD,vRealD>(funcPermute(i));
-  }
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vRealD exchanges "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  // Log2 iteration
-  for(int i=0;(1<<i)< vRealD::Nsimd();i++){
-    ExchangeTester<RealD,vRealD>(funcExchange(i));
-  }
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vRealD rotate "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  for(int r=0;r<vRealD::Nsimd();r++){
-    PermTester<RealD,vRealD>(funcRotate(r));
-  }
-
-
+  
+  std::cout << GridLogMessage <<"==================================="<<  std::endl;
+  std::cout << GridLogMessage <<"Testing vRealD SplitRotate"<<std::endl;
+  std::cout << GridLogMessage <<"==================================="<<  std::endl;
+    
+  for( auto rot : vrot )
+    for( auto split : vsplit )
+      SplitRotateTester<RealD, vRealD>(funcSplitRotate(rot, split));
 
   std::cout << GridLogMessage <<"==================================="<<  std::endl;
   std::cout << GridLogMessage <<"Testing vComplexF "<<std::endl;
@@ -653,33 +491,14 @@ int main (int argc, char ** argv)
   Tester<ComplexF,vComplexF>(funcImag());
   Tester<ComplexF,vComplexF>(funcInnerProduct());
   ReductionTester<ComplexF,ComplexF,vComplexF>(funcReduce());
-
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vComplexF permutes "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-
-  // Log2 iteration
-  for(int i=0;(1<<i)< vComplexF::Nsimd();i++){
-    PermTester<ComplexF,vComplexF>(funcPermute(i));
-  }
-
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vComplexF exchanges "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  // Log2 iteration
-  for(int i=0;(1<<i)< vComplexF::Nsimd();i++){
-    ExchangeTester<ComplexF,vComplexF>(funcExchange(i));
-  }
-
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vComplexF rotate "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  for(int r=0;r<vComplexF::Nsimd();r++){
-    PermTester<ComplexF,vComplexF>(funcRotate(r));
-  }
+  
+  std::cout << GridLogMessage <<"==================================="<<  std::endl;
+  std::cout << GridLogMessage <<"Testing vComplexF SplitRotate"<<std::endl;
+  std::cout << GridLogMessage <<"==================================="<<  std::endl;
+    
+  for( auto rot : vrot )
+    for( auto split : vsplit )
+      SplitRotateTester<ComplexF, vComplexF>(funcSplitRotate(2*rot, split));
 
   std::cout<<GridLogMessage << "==================================="<<  std::endl;
   std::cout<<GridLogMessage << "Testing vComplexD "<<std::endl;
@@ -695,37 +514,16 @@ int main (int argc, char ** argv)
   Tester<ComplexD,vComplexD>(funcAdj());
   Tester<ComplexD, vComplexD>(funcReal());
   Tester<ComplexD, vComplexD>(funcImag());
-
   Tester<ComplexD, vComplexD>(funcInnerProduct());
   ReductionTester<ComplexD, ComplexD, vComplexD>(funcReduce());
-
-  std::cout << GridLogMessage
-            << "===================================" << std::endl;
-  std::cout << GridLogMessage << "Testing vComplexD permutes " << std::endl;
-  std::cout << GridLogMessage
-            << "===================================" << std::endl;
-
-  // Log2 iteration
-  for (int i = 0; (1 << i) < vComplexD::Nsimd(); i++) {
-    PermTester<ComplexD, vComplexD>(funcPermute(i));
-  }
-
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vComplexD exchanges "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  // Log2 iteration
-  for(int i=0;(1<<i)< vComplexD::Nsimd();i++){
-    ExchangeTester<ComplexD,vComplexD>(funcExchange(i));
-  }
-
-
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  std::cout<<GridLogMessage << "Testing vComplexD rotate "<<std::endl;
-  std::cout<<GridLogMessage << "==================================="<<  std::endl;
-  for(int r=0;r<vComplexD::Nsimd();r++){
-    PermTester<ComplexD,vComplexD>(funcRotate(r));
-  }
+  
+  std::cout << GridLogMessage <<"==================================="<<  std::endl;
+  std::cout << GridLogMessage <<"Testing vComplexD SplitRotate"<<std::endl;
+  std::cout << GridLogMessage <<"==================================="<<  std::endl;
+    
+  for( auto rot : vrot )
+    for( auto split : vsplit )
+      SplitRotateTester<ComplexD, vComplexD>(funcSplitRotate(rot, split));
   
   std::cout<<GridLogMessage << "==================================="<<  std::endl;
   std::cout<<GridLogMessage << "Testing vInteger                   "<<  std::endl;
@@ -762,7 +560,7 @@ int main (int argc, char ** argv)
       decltype(innerProduct(DD[0],DD[0])) nrm;
       nrm = innerProduct(DD[i],DD[i]);
       auto tmp = Reduce(nrm);
-      //      std::cout << tmp << std::endl;
+           std::cout << tmp << std::endl;
       assert( tmp < 1.0e-14 ); 
     }
     std::cout <<" OK ! "<<std::endl;
