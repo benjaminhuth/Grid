@@ -61,7 +61,8 @@ int main (int argc, char ** argv)
   if ( WilsonKernelsStatic::Opt == WilsonKernelsStatic::OptInlineAsm ) std::cout << GridLogMessage<< "* Using Asm Nc=3   WilsonKernels" <<std::endl;
   std::cout << GridLogMessage<< "*****************************************************************" <<std::endl;
 
-  const int Ls=8;
+//   const int Ls=8;
+  const int Ls=256;
   int threads = GridThread::GetThreads();
   std::cout<<GridLogMessage << "Grid is setup to use "<<threads<<" threads"<<std::endl;
   std::cout<<GridLogMessage << "=========================================================================="<<std::endl;

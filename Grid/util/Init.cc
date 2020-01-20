@@ -169,7 +169,7 @@ void GridParseLayout(char **argv,int argc,
 		     std::vector<int> &mpi)
 {
   mpi =std::vector<int>({1,1,1,1});
-  latt=std::vector<int>({8,8,8,8});
+  latt=std::vector<int>({16,16,16,16});
 
   GridThread::SetMaxThreads();
 
