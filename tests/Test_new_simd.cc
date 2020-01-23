@@ -59,7 +59,7 @@ void test_unary(std::function<void(scalar_t &, const scalar_t &)> scalar_func,
     {
         if ( std::abs(reference[i]-result[i])>1.0e-6)
         {
-            std::cout << "**** " << name << "(" << input2[i] << ") -> " << result[i] << "  vs.  " << reference[i] << std::endl;
+            std::cout << "**** " << name << "(" << input[i] << ") -> " << result[i] << "  vs.  " << reference[i] << std::endl;
             failed++;
         }
     }
