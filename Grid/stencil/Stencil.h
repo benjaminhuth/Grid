@@ -458,7 +458,7 @@ void Communicate(void)
                 comm_time_thr[mythread] += usecond() - start;
             }
         }
-#ifdef defined(GRID_OMP) && !defined(__ve__)
+#if defined(GRID_OMP) && !defined(__ve__)
     }
 #endif
 }
