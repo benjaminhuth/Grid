@@ -84,6 +84,11 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
   permute##dir(Chi_0,Chi_0);			\
   permute##dir(Chi_1,Chi_1);			\
   permute##dir(Chi_2,Chi_2);
+  
+#define PERMUTE_TYPE(type)         \
+  permute(Chi_0,Chi_0,type);			\
+  permute(Chi_1,Chi_1,type);			\
+  permute(Chi_2,Chi_2,type);
 
 
 #define HAND_STENCIL_LEG_BASE(Dir,Perm,skew)	\
@@ -94,7 +99,7 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
   if ( local ) {						\
     LOAD_CHI(in._odata);					\
     if ( perm) {						\
-      PERMUTE_DIR(Perm);					\
+      PERMUTE_TYPE(ptype);					\
     }								\
   } else {							\
     LOAD_CHI(buf);						\
@@ -122,7 +127,7 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
   if ( local ) {					\
     LOAD_CHI(in._odata);				\
     if ( perm) {					\
-      PERMUTE_DIR(Perm);				\
+      PERMUTE_TYPE(ptype);				\
     }							\
   } else if ( st.same_node[Dir] ) {			\
     LOAD_CHI(buf);					\

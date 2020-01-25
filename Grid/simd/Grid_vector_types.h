@@ -376,80 +376,36 @@ class Grid_simd {
     ret.v = cx.v;
     return ret;
   }
+  
   ///////////////////////
-  // Exchange 
-  // Al Ah , Bl Bh -> Al Bl Ah,Bh
+  // Exchange: REMAINS ONLY BECAUSE COMPILATION OF WilsonKernelsHandGparity.cc FAILS WITHOUT -> NOT SUPPORTED
   ///////////////////////
-  friend inline void exchange(Grid_simd &out1,Grid_simd &out2,const Grid_simd &in1,const Grid_simd &in2, const int &n)
-  {
-    if       (n==9) {
-      Optimization::Exchange::Exchange9(out1.v,out2.v,in1.v,in2.v);
-    } else if(n==8) {
-      Optimization::Exchange::Exchange8(out1.v,out2.v,in1.v,in2.v);
-    } else if(n==7) {
-      Optimization::Exchange::Exchange7(out1.v,out2.v,in1.v,in2.v);
-    } else if(n==6) {
-      Optimization::Exchange::Exchange6(out1.v,out2.v,in1.v,in2.v);
-    } else if(n==5) {
-      Optimization::Exchange::Exchange5(out1.v,out2.v,in1.v,in2.v);
-    } else if(n==4) {
-      Optimization::Exchange::Exchange4(out1.v,out2.v,in1.v,in2.v);
-    } else if(n==3) {
-      Optimization::Exchange::Exchange3(out1.v,out2.v,in1.v,in2.v);
-    } else if(n==2) {
-      Optimization::Exchange::Exchange2(out1.v,out2.v,in1.v,in2.v);
-    } else if(n==1) {
-      Optimization::Exchange::Exchange1(out1.v,out2.v,in1.v,in2.v);
-    } else if(n==0) {
-      Optimization::Exchange::Exchange0(out1.v,out2.v,in1.v,in2.v);
-    }
-  }
   friend inline void exchange0(Grid_simd &out1,Grid_simd &out2, const Grid_simd &in1, const Grid_simd &in2){
-    Optimization::Exchange::Exchange0(out1.v,out2.v,in1.v,in2.v);
+    assert(("Not supported in SX-Aurora", 0));
   }
   friend inline void exchange1(Grid_simd &out1,Grid_simd &out2, const Grid_simd &in1, const Grid_simd &in2){
-    Optimization::Exchange::Exchange1(out1.v,out2.v,in1.v,in2.v);
+    assert(("Not supported in SX-Aurora", 0));
   }
   friend inline void exchange2(Grid_simd &out1,Grid_simd &out2, const Grid_simd &in1, const Grid_simd &in2){
-    Optimization::Exchange::Exchange2(out1.v,out2.v,in1.v,in2.v);
+    assert(("Not supported in SX-Aurora", 0));
   }
   friend inline void exchange3(Grid_simd &out1,Grid_simd &out2, const Grid_simd &in1, const Grid_simd &in2){
-    Optimization::Exchange::Exchange3(out1.v,out2.v,in1.v,in2.v);
+    assert(("Not supported in SX-Aurora", 0));
   }
   ////////////////////////////////////////////////////////////////////
-  // General permute; assumes vector length is same across
-  // all subtypes; may not be a good assumption, but could
-  // add the vector width as a template param for BG/Q for example
+  // Permute: REMAINS ONLY BECAUSE COMPILATION OF WilsonKernelsHandGparity.cc FAILS WITHOUT -> NOT SUPPORTED
   ////////////////////////////////////////////////////////////////////
   friend inline void permute0(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute0(b.v);
+    assert(("Not supported in SX-Aurora", 0));
   }
   friend inline void permute1(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute1(b.v);
+    assert(("Not supported in SX-Aurora", 0));
   }
   friend inline void permute2(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute2(b.v);
+    assert(("Not supported in SX-Aurora", 0));
   }
   friend inline void permute3(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute3(b.v);
-  }
-  friend inline void permute4(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute4(b.v);
-  }
-  friend inline void permute5(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute5(b.v);
-  }
-  friend inline void permute6(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute6(b.v);
-  }
-  friend inline void permute7(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute7(b.v);
-  }
-  friend inline void permute8(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute8(b.v);
-  }
-  friend inline void permute9(Grid_simd &y, const Grid_simd &b) {
-    y.v = Optimization::Permute::Permute9(b.v);
+    assert(("Not supported in SX-Aurora", 0));
   }
   
   // Changed for extended simd-with support (Aurora-SX)

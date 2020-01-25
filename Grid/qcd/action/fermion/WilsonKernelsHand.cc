@@ -93,6 +93,14 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
       permute##dir(Chi_10,Chi_10);\
       permute##dir(Chi_11,Chi_11);\
       permute##dir(Chi_12,Chi_12);
+      
+#define PERMUTE_TYPE(type)			\
+      permute(Chi_00,Chi_00,type);\
+      permute(Chi_01,Chi_01,type);\
+      permute(Chi_02,Chi_02,type);\
+      permute(Chi_10,Chi_10,type);\
+      permute(Chi_11,Chi_11,type);\
+      permute(Chi_12,Chi_12,type);
 
 //      hspin(0)=fspin(0)+timesI(fspin(3));
 //      hspin(1)=fspin(1)+timesI(fspin(2));
@@ -316,7 +324,7 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
     LOAD_CHIMU;					\
     PROJ;					\
     if ( perm) {				\
-      PERMUTE_DIR(PERM);			\
+      PERMUTE_TYPE(ptype);			\
     }						\
   } else {					\
     LOAD_CHI;					\
@@ -333,7 +341,7 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
     LOAD_CHIMU;					\
     PROJ;					\
     if ( perm) {				\
-      PERMUTE_DIR(PERM);			\
+      PERMUTE_TYPE(ptype);			\
     }						\
   } else if ( st.same_node[DIR] ) {		\
     LOAD_CHI;					\
