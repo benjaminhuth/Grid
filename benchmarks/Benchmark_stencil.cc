@@ -41,7 +41,7 @@ int main (int argc, char ** argv)
 #define LMIN (8)
 #define LINC (4)
     
-//     typedef LatticeColourMatrix field_t;
+//    typedef LatticeColourMatrix field_t;
     typedef LatticeComplex field_t;
     typedef typename field_t::vector_object vobj_t;
     typedef typename vobj_t::scalar_object sobj_t;
@@ -59,6 +59,8 @@ int main (int argc, char ** argv)
     std::vector<int> latt_size = GridDefaultLatt();
     int64_t vol = latt_size[0]*latt_size[1]*latt_size[2]*latt_size[3];
     std::cout<<GridLogMessage << "Grid lattice size    "<<latt_size<<std::endl;
+    
+    std::cout<<GridLogMessage << "Lattice site size    "<<sizeof(sobj_t)<<" byte"<<std::endl;
     
     std::vector<int> stencil_dims;
     std::vector<int> stencil_disps;
@@ -137,6 +139,11 @@ int main (int argc, char ** argv)
     auto end = std::chrono::high_resolution_clock::now();
     double time = std::chrono::duration<double>(end-start).count() / Nloop;
     compute_time /= Nloop;
+    
+    double packet_size = 0.0;
+    for(auto packet : my_stencil.Packets)
+        packet_size += packet.bytes;
+    packet_size /= my_stencil.Packets.size();
 
     std::cout<<GridLogMessage << "TIME REPORT:" << std::endl;
     std::cout<<GridLogMessage << " total time    = " << time*1.0e6 << " us" << std::endl;
@@ -145,6 +152,9 @@ int main (int argc, char ** argv)
     std::cout<<GridLogMessage << std::endl;
     std::cout<<GridLogMessage << "STENCIL REPORT:" << std::endl;
     my_stencil.Report();
+    std::cout<<GridLogMessage << "ADDITIONAL INFOS:" << std::endl;
+    std::cout<<GridLogMessage << " packet size  = " << packet_size << std::endl;
+    std::cout<<GridLogMessage << " # of packets = " << my_stencil.Packets.size() << std::endl;
     
     Grid_finalize();
 }

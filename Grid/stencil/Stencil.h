@@ -340,87 +340,101 @@ class CartesianStencil { // Stencil runs along coordinate axes only; NO diagonal
   // Comms packet queue for asynch thread
   //////////////////////////////////////////
 
-   void CommunicateThreaded()
-   {
- #ifdef GRID_OMP
-     // must be called in parallel region
-     int mythread = omp_get_thread_num();
-     int nthreads = CartesianCommunicator::nCommThreads;
- #else
-     int mythread = 0;
-     int nthreads = 1;
- #endif
-     if (nthreads == -1) nthreads = 1;
-     if (mythread < nthreads) {
-       comm_enter_thr[mythread] = usecond();
-       for (int i = mythread; i < Packets.size(); i += nthreads) {
- 	uint64_t bytes = _grid->StencilSendToRecvFrom(Packets[i].send_buf,
- 						      Packets[i].to_rank,
- 						      Packets[i].recv_buf,
- 						      Packets[i].from_rank,
- 						      Packets[i].bytes,i);
- 	comm_bytes_thr[mythread] += bytes;
-       }
-       comm_leave_thr[mythread]= usecond();
-       comm_time_thr[mythread] += comm_leave_thr[mythread] - comm_enter_thr[mythread];
-     }
-   }
+void CommunicateThreaded()
+{
+#ifdef GRID_OMP
+    // must be called in parallel region
+    // But: SX-Aurora just supports thread level MPI_THREAD_SERIALIZED
+    // thus later omp critical section
+    int mythread = omp_get_thread_num();
+    int nthreads = CartesianCommunicator::nCommThreads;
+#else
+    int mythread = 0;
+    int nthreads = 1;
+#endif
+    if (nthreads == -1) nthreads = 1;
+    if (mythread < nthreads) 
+    {
+        comm_enter_thr[mythread] = usecond();
+        for (int i = mythread; i < Packets.size(); i += nthreads) 
+        {
+            
+#ifdef __ve__   
+            #pragma omp critical (stencil_communicate_threaded)
+#endif
+            {
+                uint64_t bytes = _grid->StencilSendToRecvFrom(Packets[i].send_buf,
+                                                              Packets[i].to_rank,
+                                                              Packets[i].recv_buf,
+                                                              Packets[i].from_rank,
+                                                              Packets[i].bytes,i);
+                comm_bytes_thr[mythread] += bytes;
+            }
+        }
+        comm_leave_thr[mythread]= usecond();
+        comm_time_thr[mythread] += comm_leave_thr[mythread] - comm_enter_thr[mythread];
+    }
+}
   
-  void CollateThreads(void)
-  {
+void CollateThreads(void)
+{
     int nthreads = CartesianCommunicator::nCommThreads;
     double first=0.0;
     double last =0.0;
 
-    for(int t=0;t<nthreads;t++) {
+    for(int t=0;t<nthreads;t++) 
+    {
+        double t0 = comm_enter_thr[t];
+        double t1 = comm_leave_thr[t];
+        comms_bytes+=comm_bytes_thr[t];
 
-      double t0 = comm_enter_thr[t];
-      double t1 = comm_leave_thr[t];
-      comms_bytes+=comm_bytes_thr[t];
+        comm_enter_thr[t] = 0.0;
+        comm_leave_thr[t] = 0.0;
+        comm_time_thr[t]   = 0.0;
+        comm_bytes_thr[t]=0;
 
-      comm_enter_thr[t] = 0.0;
-      comm_leave_thr[t] = 0.0;
-      comm_time_thr[t]   = 0.0;
-      comm_bytes_thr[t]=0;
+        if ( first == 0.0 ) first = t0;                   // first is t0
+        if ( (t0 > 0.0) && ( t0 < first ) ) first = t0;   // min time seen
 
-      if ( first == 0.0 ) first = t0;                   // first is t0
-      if ( (t0 > 0.0) && ( t0 < first ) ) first = t0;   // min time seen
-
-      if ( t1 > last ) last = t1;                       // max time seen
-      
+        if ( t1 > last ) last = t1;                       // max time seen
     }
     commtime+= last-first;
-  }
+}
   
-// DEPRATCHED
-//   void CommunicateBegin(std::vector<std::vector<CommsRequest_t> > &reqs)
-//   {
-//     reqs.resize(Packets.size());
-//     commtime-=usecond();
-//     for(int i=0;i<Packets.size();i++){
-//       comms_bytes+=_grid->StencilSendToRecvFromBegin(reqs[i],
-// 						     Packets[i].send_buf,
-// 						     Packets[i].to_rank,
-// 						     Packets[i].recv_buf,
-// 						     Packets[i].from_rank,
-// 						     Packets[i].bytes,i);
-//     }
-//   }
-// 
-//   void CommunicateComplete(std::vector<std::vector<CommsRequest_t> > &reqs)
-//   {
-//     for(int i=0;i<Packets.size();i++){
-//       _grid->StencilSendToRecvFromComplete(reqs[i],i);
-//     }
-//     commtime+=usecond();
-//   }
+void CommunicateBegin(std::vector<std::vector<CommsRequest_t> > &reqs)
+{
+    reqs.resize(Packets.size());
+    commtime-=usecond();
+    
+    for(int i=0;i<Packets.size();i++)
+    {
+        comms_bytes+=_grid->StencilSendToRecvFromBegin(reqs[i],
+                                                       Packets[i].send_buf,
+                                                       Packets[i].to_rank,
+                                                       Packets[i].recv_buf,
+                                                       Packets[i].from_rank,
+                                                       Packets[i].bytes,i);
+    }
+}
+
+void CommunicateComplete(std::vector<std::vector<CommsRequest_t> > &reqs)
+{
+    for(int i=0;i<Packets.size();i++)
+    {
+        _grid->StencilSendToRecvFromComplete(reqs[i],i);
+    }
+    
+    commtime+=usecond();
+}
   
 void Communicate(void)
 {
-#ifdef GRID_OMP
-#pragma omp parallel 
+
+#if defined(GRID_OMP) && !defined(__ve__)
+    #pragma omp parallel 
     {
         // must be called in parallel region
+        // But: SX-Aurora just supports thread level MPI_THREAD_SERIALIZED
         int mythread  = omp_get_thread_num();
         int maxthreads= omp_get_max_threads();
         int nthreads = CartesianCommunicator::nCommThreads;
@@ -444,27 +458,27 @@ void Communicate(void)
                 comm_time_thr[mythread] += usecond() - start;
             }
         }
-#ifdef GRID_OMP
+#ifdef defined(GRID_OMP) && !defined(__ve__)
     }
 #endif
 }
   
-  template<class compressor> void HaloExchange(const Lattice<vobj> &source,compressor &compress) 
-  {
+template<class compressor> void HaloExchange(const Lattice<vobj> &source,compressor &compress) 
+{
     std::vector<std::vector<CommsRequest_t> > reqs;
     Prepare();
     HaloGather(source,compress);
     // Concurrent
-    //CommunicateBegin(reqs);
-    //CommunicateComplete(reqs);
+    CommunicateBegin(reqs);
+    CommunicateComplete(reqs);
     // Sequential, possibly threaded
-    Communicate();
+//     Communicate();
     _grid->Barrier();
     CommsMergeSHM(compress); 
     CommsMerge(compress); 
-  }
+}
   
-  template<class compressor> int HaloGatherDir(const Lattice<vobj> &source,compressor &compress,int point,int & face_idx)
+template<class compressor> int HaloGatherDir(const Lattice<vobj> &source,compressor &compress,int point,int & face_idx)
   {
     int dimension    = _directions[point];
     int displacement = _distances[point];
